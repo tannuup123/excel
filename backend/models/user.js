@@ -14,9 +14,12 @@ const userSchema = new mongoose.Schema({
   isApproved: {
     type: Boolean,
     default: function () {
-      return this.role === 'super_admin'; // Only super_admin auto-approved
+      return this.role === 'super_admin'; // Auto-approve only super_admins
     }
   }
 });
 
-module.exports = mongoose.model('User', userSchema);
+// ✅ Prevent OverwriteModelError
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+module.exports = User;

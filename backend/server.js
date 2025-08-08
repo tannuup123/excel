@@ -2,7 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
+
+const verifyToken = require('./middleware/verifyToken');
+const userRoutes = require('./routes/userRoutes');
+const User = require('./models/user'); // ✅ Fix: use model from separate file
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -10,153 +15,101 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// MongoDB Connection
 const mongoURI = process.env.MONGO_URI;
-
 mongoose.connect(mongoURI)
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.log(err));
+  .then(() => console.log('✅ MongoDB connected successfully'))
+  .catch(err => console.log('❌ MongoDB connection error:', err));
 
-const userSchema = new mongoose.Schema({
-  fullname: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['user', 'admin', 'super-admin'], default: 'user' },
-  phoneNumber: {
-    type: String,
-    required: function() { return this.role === 'admin'; }
-  },
-  employeeId: {
-    type: String,
-    required: function() { return this.role === 'admin'; },
-    unique: function() { return this.role === 'admin'; }
-  },
-  isApproved: {
-  type: Boolean,
-  default: function () {
-    return this.role === 'super-admin'; // only super-admin is auto-approved
-  }
-}
-
-  // governmentId: {
-  //   type: String,
-  //   required: function() { return this.role === 'admin'; },
-  //   unique: function() { return this.role === 'admin'; }
-  // }
-});
-
-userSchema.pre('save', async function(next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
-
-const User = mongoose.model('User', userSchema);
-
+// Register Route
 app.post('/api/register', async (req, res) => {
   try {
     const { fullname, email, password, role, phoneNumber, employeeId } = req.body;
+
     if (role === 'admin' && (!phoneNumber || !employeeId)) {
-        return res.status(400).json({ error: 'Admin registration requires phone number and employee ID.' });
+      return res.status(400).json({ error: 'Admin registration requires phone number and employee ID.' });
     }
+
     const newUser = new User({
-        fullname,
-        email,
-        password,
-        role,
-        phoneNumber: role === 'admin' ? phoneNumber : undefined,
-        employeeId: role === 'admin' ? employeeId : undefined,
-        // governmentId: role === 'admin' ? governmentId : undefined
+      fullname,
+      email,
+      password,
+      role,
+      phoneNumber: role === 'admin' ? phoneNumber : undefined,
+      employeeId: role === 'admin' ? employeeId : undefined,
     });
+
     await newUser.save();
     res.status(201).json({ message: 'User registered successfully!' });
+
   } catch (error) {
     if (error.code === 11000) {
       const field = Object.keys(error.keyValue)[0];
       const errorMessage = `The ${field} '${error.keyValue[field]}' is already in use. Please use a different value.`;
       return res.status(400).json({ error: errorMessage });
     }
-    console.error('Registration failed:', error); 
+    console.error('❌ Registration failed:', error);
     res.status(500).json({ error: 'Registration failed due to a server error.' });
   }
 });
 
+// Login Route
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password, role } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(400).json({ error: 'Invalid email or password.' });
-    }
+    if (!user) return res.status(400).json({ error: 'Invalid email or password.' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid email or password.' });
-    }
-    
+    if (!isMatch) return res.status(400).json({ error: 'Invalid email or password.' });
+
     if (user.role !== 'super-admin' && user.role !== role) {
       return res.status(403).json({ error: `Forbidden: You are not authorized to login as ${role}.` });
     }
-    
-    res.status(200).json({ message: 'Login successful!', role: user.role });
+
+    if (user.role === 'admin' && !user.isApproved) {
+      return res.status(403).json({ error: 'Admin approval pending.' });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.status(200).json({
+      message: 'Login successful!',
+      role: user.role,
+      token
+    });
+
   } catch (error) {
     res.status(500).json({ error: 'Server error during login.' });
   }
 });
 
-app.get('/api/users', async (req, res) => {
-  try {
-    const users = await User.find({}, 'fullname email role');
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch users.' });
-  }
-});
+// Protected Routes
+app.use('/api/users', verifyToken, userRoutes);
 
-app.put('/api/users/:id/role', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { role } = req.body;
-
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found.' });
-    }
-
-    user.role = role;
-    await user.save();
-    
-    res.status(200).json({ message: `User role updated to ${role} successfully.` });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update user role.' });
-  }
-});
-
-app.delete('/api/users/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    await User.findByIdAndDelete(id);
-    res.status(200).json({ message: 'User deleted successfully.' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete user.' });
-  }
-});
-
+// Super Admin Creation Route (One-time use)
 app.post('/api/create-super-admin', async (req, res) => {
   try {
     const { fullname, email, password } = req.body;
     const existingSuperAdmin = await User.findOne({ role: 'super-admin' });
+
     if (existingSuperAdmin) {
       return res.status(400).json({ error: 'A super admin already exists.' });
     }
-    
+
     const newUser = new User({ fullname, email, password, role: 'super-admin' });
     await newUser.save();
     res.status(201).json({ message: 'Super Admin created successfully!' });
+
   } catch (error) {
     res.status(500).json({ error: 'Failed to create Super Admin.' });
   }
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Start Server
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

@@ -2,6 +2,7 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+// Register User
 exports.registerUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -19,17 +20,17 @@ exports.registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-     isApproved:
-  role === 'super_admin' ? true : false
-});
+      isApproved: role === 'super_admin' ? true : false
+    });
 
     await newUser.save();
-    res.status(201).json({ msg: 'Registered successfully. Admins need approval.' });
+    res.status(201).json({ msg: 'Registered successfully. Awaiting approval.' });
   } catch (err) {
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
 
+// Login User
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -42,9 +43,9 @@ exports.loginUser = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
 
-    // Check admin approval
-    if (user.role === 'admin' && !user.isApproved) {
-      return res.status(403).json({ msg: 'Admin approval pending' });
+    // Check approval for admin and user
+    if ((user.role === 'admin' || user.role === 'user') && !user.isApproved) {
+      return res.status(403).json({ msg: 'Approval pending' });
     }
 
     // Generate JWT
@@ -54,7 +55,14 @@ exports.loginUser = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    res.json({ token, user: { name: user.name, email: user.email, role: user.role } });
+    res.json({
+      token,
+      user: {
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (err) {
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
