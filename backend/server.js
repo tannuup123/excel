@@ -20,7 +20,21 @@ const userSchema = new mongoose.Schema({
   fullname: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['user', 'admin', 'super-admin'], default: 'user' }
+  role: { type: String, enum: ['user', 'admin', 'super-admin'], default: 'user' },
+  phoneNumber: {
+    type: String,
+    required: function() { return this.role === 'admin'; }
+  },
+  employeeId: {
+    type: String,
+    required: function() { return this.role === 'admin'; },
+    unique: function() { return this.role === 'admin'; }
+  },
+  // governmentId: {
+  //   type: String,
+  //   required: function() { return this.role === 'admin'; },
+  //   unique: function() { return this.role === 'admin'; }
+  // }
 });
 
 userSchema.pre('save', async function(next) {
@@ -34,14 +48,28 @@ const User = mongoose.model('User', userSchema);
 
 app.post('/api/register', async (req, res) => {
   try {
-    const { fullname, email, password, role } = req.body;
-    const newUser = new User({ fullname, email, password, role });
+    const { fullname, email, password, role, phoneNumber, employeeId } = req.body;
+    if (role === 'admin' && (!phoneNumber || !employeeId)) {
+        return res.status(400).json({ error: 'Admin registration requires phone number and employee ID.' });
+    }
+    const newUser = new User({
+        fullname,
+        email,
+        password,
+        role,
+        phoneNumber: role === 'admin' ? phoneNumber : undefined,
+        employeeId: role === 'admin' ? employeeId : undefined,
+        // governmentId: role === 'admin' ? governmentId : undefined
+    });
     await newUser.save();
     res.status(201).json({ message: 'User registered successfully!' });
   } catch (error) {
     if (error.code === 11000) {
-      return res.status(400).json({ error: 'This email is already in use.' });
+      const field = Object.keys(error.keyValue)[0];
+      const errorMessage = `The ${field} '${error.keyValue[field]}' is already in use. Please use a different value.`;
+      return res.status(400).json({ error: errorMessage });
     }
+    console.error('Registration failed:', error); 
     res.status(500).json({ error: 'Registration failed due to a server error.' });
   }
 });
