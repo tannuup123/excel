@@ -30,6 +30,13 @@ const userSchema = new mongoose.Schema({
     required: function() { return this.role === 'admin'; },
     unique: function() { return this.role === 'admin'; }
   },
+  isApproved: {
+  type: Boolean,
+  default: function () {
+    return this.role === 'super-admin'; // only super-admin is auto-approved
+  }
+}
+
   // governmentId: {
   //   type: String,
   //   required: function() { return this.role === 'admin'; },
