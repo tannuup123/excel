@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from "framer-motion";
 import { FaChartLine, FaTable, FaShieldAlt, FaTools, FaQuoteLeft, FaCheck, FaFacebook, FaTwitter, FaLinkedin, FaInstagram, FaSun, FaMoon } from 'react-icons/fa';
 
 const CompanyLogo = ({ name }) => (
@@ -19,6 +20,11 @@ const LandingPage = () => {
     localStorage.setItem('theme', newTheme);
   };
 
+  const fadeInUp = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0 }
+};
+
   useEffect(() => {
     const html = document.documentElement;
     if (theme === 'dark') {
@@ -27,6 +33,10 @@ const LandingPage = () => {
       html.classList.remove('dark');
     }
   }, [theme]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   return (
     <div className="bg-gray-900 dark:bg-gray-100 text-gray-100 dark:text-gray-900 font-sans leading-relaxed transition-colors duration-500">
@@ -58,7 +68,13 @@ const LandingPage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center bg-cover bg-center pt-20"
+      <motion.section 
+      variants={fadeInUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  transition={{ duration: 0.6 }}
+      className="min-h-screen flex items-center bg-cover bg-center pt-20"
         style={{ backgroundImage: `url('https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')` }}>
         <div className="bg-gray-900 dark:bg-white bg-opacity-70 dark:bg-opacity-70 w-full min-h-screen flex items-center justify-center transition-colors duration-500">
           <div className="max-w-5xl mx-auto px-6 text-center text-white dark:text-gray-900">
@@ -76,10 +92,16 @@ const LandingPage = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Trusted By Section */}
-      <section className="py-16 bg-gray-800 dark:bg-gray-200 text-center transition-colors duration-500">
+      <motion.section 
+      variants={fadeInUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  transition={{ duration: 0.6 }}
+   className="py-16 bg-gray-800 dark:bg-gray-200 text-center transition-colors duration-500">
         <div className="container mx-auto px-6">
           <h3 className="text-xl font-semibold text-gray-400 dark:text-gray-600 mb-8">Trusted by data teams at leading companies</h3>
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
@@ -90,10 +112,16 @@ const LandingPage = () => {
             <CompanyLogo name="Future Labs" />
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500">
+      <motion.section 
+      variants={fadeInUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: false, amount: 0.2 }}
+  transition={{ duration: 0.6 }}
+   id="features" className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500 scroll-mt-40">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">Features Built for Data Professionals</h2>
           <p className="text-lg text-gray-400 dark:text-gray-600 mb-12 max-w-3xl mx-auto">
@@ -120,10 +148,16 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 bg-gray-800 dark:bg-gray-200 transition-colors duration-500">
+      <motion.section 
+      variants={fadeInUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: false, amount: 0.2 }}
+  transition={{ duration: 0.6 }}
+   id="how-it-works" className="py-20 bg-gray-800 dark:bg-gray-200 transition-colors duration-500 scroll-mt-28">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">How It Works</h2>
           <p className="text-lg text-gray-400 dark:text-gray-600 mb-12">
@@ -138,22 +172,28 @@ const LandingPage = () => {
             </div>
             {/* Step 2 */}
             <div>
-              <img src="https://images.unsplash.com/photo-1605379399843-5870eea9b7be?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Data Visualization" className="rounded-lg shadow-xl mb-4 h-64 w-full object-cover" />
+              <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1115&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Data Visualization" className="rounded-lg shadow-xl mb-4 h-64 w-full object-cover"/>
               <h3 className="text-2xl font-semibold text-white dark:text-gray-900 mb-2">2. Analyze & Visualize</h3>
               <p className="text-gray-400 dark:text-gray-600">Use our drag-and-drop interface to build powerful visualizations.</p>
             </div>
             {/* Step 3 */}
             <div>
-              <img src="https://images.unsplash.com/photo-1549923746-c502d488b317?q=80&w=2672&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Team Collaboration" className="rounded-lg shadow-xl mb-4 h-64 w-full object-cover" />
+              <img src="https://images.unsplash.com/photo-1552581234-26160f608093?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Team Collaboration" className="rounded-lg shadow-xl mb-4 h-64 w-full object-cover" />
               <h3 className="text-2xl font-semibold text-white dark:text-gray-900 mb-2">3. Share & Collaborate</h3>
               <p className="text-gray-400 dark:text-gray-600">Share live dashboards with your team and make collaborative decisions.</p>
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500">
+      <motion.section 
+      variants={fadeInUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: false, amount: 0.2 }}
+  transition={{ duration: 0.6 }}
+   id="pricing" className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500 scroll-mt-20">
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">Simple, Transparent Pricing</h2>
           <p className="text-lg text-gray-400 dark:text-gray-600 mb-12">
@@ -203,10 +243,16 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-gray-800 dark:bg-gray-200 text-center transition-colors duration-500">
+      <motion.section 
+      variants={fadeInUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: false, amount: 0.2 }}
+  transition={{ duration: 0.6 }}
+   id="testimonials" className="py-20 bg-gray-800 dark:bg-gray-200 text-center transition-colors duration-500 scroll-mt-28">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">What Our Customers Say</h2>
           <p className="text-lg text-gray-400 dark:text-gray-600 mb-12">
@@ -239,10 +285,16 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
       
       {/* FAQ Section */}
-      <section id="faq" className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500">
+      <motion.section 
+      variants={fadeInUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: false, amount: 0.2 }}
+  transition={{ duration: 0.6 }}
+   id="faq" className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500 scroll-mt-20">
           <div className="container mx-auto px-6 text-center">
               <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">Frequently Asked Questions</h2>
               <p className="text-lg text-gray-400 dark:text-gray-600 mb-12">
@@ -269,10 +321,16 @@ const LandingPage = () => {
                   </div>
               </div>
           </div>
-      </section>
+      </motion.section>
 
       {/* Final Call to Action Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-green-500 text-white text-center">
+      <motion.section 
+      variants={fadeInUp}
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: false, amount: 0.2 }}
+  transition={{ duration: 0.6 }}
+   className="py-20 bg-gradient-to-r from-blue-600 to-green-500 text-white text-center scroll-mt-20">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl font-bold mb-4">Ready to Transform Your Data Workflow?</h2>
           <p className="text-lg mb-8 max-w-3xl mx-auto">
@@ -285,7 +343,7 @@ const LandingPage = () => {
             Start Your Free Trial
           </Link>
         </div>
-      </section>
+      </motion.section>
 
       {/* Footer */}
       <footer className="py-12 bg-gray-800 dark:bg-gray-200 text-gray-400 dark:text-gray-600 transition-colors duration-500">
