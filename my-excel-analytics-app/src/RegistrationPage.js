@@ -34,45 +34,52 @@ const RegistrationPage = () => {
         setIsDarkMode(!isDarkMode);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match!");
-            return;
-        }
+   const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        const registrationData = {
-            fullname: formData.fullname,
-            email: formData.email,
-            password: formData.password,
-            role: formData.role,
-            ...(formData.role === 'admin' && {
-                phoneNumber: formData.phoneNumber,
-                employeeId: formData.employeeId,
-                // governmentId: formData.governmentId,
-            }),
-        };
+    if (formData.password !== formData.confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+    }
 
-        try {
-            const response = await fetch('http://localhost:5000/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(registrationData),
-            });
-            const data = await response.json();
-            if (response.ok) {
-                alert('Registration successful!');
-                navigate('/login');
-            } else {
-                alert(data.error || 'Registration failed');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        }
+    const registrationData = {
+        fullname: formData.fullname,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role, // sends 'user' or 'admin' directly
+
+
     };
+
+    if (formData.role === 'admin') {
+        registrationData.phoneNumber = formData.phoneNumber;
+        registrationData.employeeId = formData.employeeId;
+        // Add governmentId if backend expects it
+    }
+
+    try {
+        const response = await fetch('http://localhost:5000/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(registrationData),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Registration successful!');
+            navigate('/login');
+        } else {
+            alert(data.error || 'Registration failed');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    }
+};
+
 
     return (
         <div className={`relative flex items-center justify-center h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}

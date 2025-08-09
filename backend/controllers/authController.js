@@ -1,69 +1,114 @@
-const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const User = require('../models/user');
 
-// Register User
-exports.registerUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
+const validRoles = ['user', 'admin', 'super-admin'];
 
+// ✅ REGISTER
+exports.register = async (req, res) => {
   try {
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ msg: 'User already exists' });
+    const { fullname, email, password, role, phoneNumber, employeeId } = req.body;
 
-    // Hash password
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role selected.' });
+    }
+
+    if (role === 'admin' && (!phoneNumber || !employeeId)) {
+      return res.status(400).json({ error: 'Admin registration requires phone number and employee ID.' });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: `The email '${email}' is already in use.` });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Save user
     const newUser = new User({
-      name,
+      fullname,
       email,
       password: hashedPassword,
       role,
-      isApproved: role === 'super_admin' ? true : false
+      phoneNumber: role === 'admin' ? phoneNumber : undefined,
+      employeeId: role === 'admin' ? employeeId : undefined,
+      isApproved: role === 'super-admin' ? true : false
     });
 
     await newUser.save();
-    res.status(201).json({ msg: 'Registered successfully. Awaiting approval.' });
-  } catch (err) {
-    res.status(500).json({ msg: 'Server error', error: err.message });
+    res.status(201).json({ message: 'User registered successfully!' });
+
+  } catch (error) {
+    console.error('❌ Registration failed:', error);
+    res.status(500).json({ error: 'Registration failed due to a server error.' });
   }
 };
 
-// Login User
-exports.loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
+// ✅ LOGIN
+exports.login = async (req, res) => {
   try {
-    // Find user
+    const { email, password, role } = req.body;
+
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: 'Invalid credentials' });
+    if (!user) return res.status(400).json({ error: 'Invalid email or password.' });
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
+    if (!isMatch) return res.status(400).json({ error: 'Invalid email or password.' });
 
-    // Check approval for admin and user
-    if ((user.role === 'admin' || user.role === 'user') && !user.isApproved) {
-      return res.status(403).json({ msg: 'Approval pending' });
+    if (user.role !== 'super-admin' && user.role !== role) {
+      return res.status(403).json({ error: `Forbidden: You are not authorized to login as ${role}.` });
     }
 
-    // Generate JWT
+    if (user.role === 'admin' && !user.isApproved) {
+      return res.status(403).json({ error: 'Admin approval pending.' });
+    }
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
 
-    res.json({
-      token,
+    res.status(200).json({
+      message: 'Login successful!',
       user: {
-        name: user.name,
+        name: user.fullname,
         email: user.email,
         role: user.role
-      }
+      },
+      token
     });
-  } catch (err) {
-    res.status(500).json({ msg: 'Server error', error: err.message });
+
+  } catch (error) {
+    console.error('❌ Login failed:', error);
+    res.status(500).json({ error: 'Server error during login.' });
+  }
+};
+
+// ✅ ONE-TIME SUPER ADMIN CREATION
+exports.createSuperAdmin = async (req, res) => {
+  try {
+    const { fullname, email, password } = req.body;
+    const existingSuperAdmin = await User.findOne({ role: 'super-admin' });
+
+    if (existingSuperAdmin) {
+      return res.status(400).json({ error: 'A super admin already exists.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      fullname,
+      email,
+      password: hashedPassword,
+      role: 'super-admin',
+      isApproved: true
+    });
+
+    await newUser.save();
+    res.status(201).json({ message: 'Super Admin created successfully!' });
+
+  } catch (error) {
+    console.error('❌ Failed to create Super Admin:', error);
+    res.status(500).json({ error: 'Failed to create Super Admin.' });
   }
 };

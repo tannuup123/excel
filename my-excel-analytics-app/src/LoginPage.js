@@ -30,46 +30,52 @@ const LoginPage = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            // console.log('Sending login request with data:', formData);
-            const response = await fetch('http://localhost:5000/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+    e.preventDefault();
 
-            const data = await response.json();
-            // console.log('Received response:', data);
+    try {
+        const response = await fetch('http://localhost:5000/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        });
 
-            if (response.ok) {
-                alert('Login successful!');
-                localStorage.setItem('isLoggedIn','true')
-                localStorage.setItem('userRole', data.role);
+        const data = await response.json();
 
-                switch (data.role) {
-                    case 'super-admin':
-                        navigate('/super-admin');
-                        break;
-                    case 'admin':
-                        navigate('/admin-dashboard');
-                        break;
-                    case 'user':
-                        navigate('/user-dashboard');
-                        break;
-                    default:
-                        navigate('/user-dashboard');
-                }
-            } else {
-                alert(data.error || 'Login failed');
-            }
-        } catch (error) {
-            console.error('Network or server error:', error);
-            alert('An error occurred. Please try again.');
+        if (!response.ok) {
+              console.log("Response from server:", data);
+
+            alert(data.msg || 'Login failed');
+            return;
         }
-    };
+
+        // Store token and user role
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userRole', data.user.role);
+
+        alert('Login successful!');
+
+        // Navigate based on role
+        switch (data.user.role) {
+            case 'super-admin':
+                navigate('/super-admin');
+                break;
+            case 'admin':
+                navigate('/admin-dashboard');
+                break;
+            case 'user':
+                navigate('/user-dashboard');
+                break;
+            default:
+                navigate('/user-dashboard');
+        }
+    } catch (error) {
+        console.error('Network or server error:', error);
+        alert('An error occurred. Please try again.');
+    }
+};
+
 
     return (
         <div className={`relative flex items-center justify-center h-screen transition-colors duration-300 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-800'}`}
