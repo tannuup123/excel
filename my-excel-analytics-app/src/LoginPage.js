@@ -46,6 +46,21 @@ const LoginPage = () => {
 
             if (response.ok) {
                 alert('Login successful!');
+
+
+
+
+
+
+                // ✅ FIX: Save the authentication token
+            localStorage.setItem('token', data.token);
+            
+
+
+
+
+
+
                 localStorage.setItem('isLoggedIn','true')
                 localStorage.setItem('userRole', data.role);
 
