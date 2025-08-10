@@ -17,10 +17,16 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB connected successfully'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+// MongoDB Connection (Atlas)
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log('✅ MongoDB Atlas connected successfully'))
+  .catch(err => {
+    console.error('❌ MongoDB Atlas connection error:', err);
+    process.exit(1); // Stop server if DB connection fails
+  });
 
 // =================== REGISTER ===================
 app.post('/api/register', async (req, res) => {
