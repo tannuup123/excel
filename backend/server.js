@@ -1,28 +1,28 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const bcrypt = require('bcryptjs'); // ✅ use bcryptjs for consistency
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const verifyToken = require('./middleware/verifyToken');
 const userRoutes = require('./routes/userRoutes');
-const User = require('./models/user'); // ✅ Use model from separate file
+const fileRoutes = require('./routes/fileRoutes');
+const User = require('./models/user');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected successfully'))
-  .catch(err => console.log('❌ MongoDB connection error:', err));
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
-/**
- * REGISTER ROUTE
- */
+// =================== REGISTER ===================
 app.post('/api/register', async (req, res) => {
   try {
     const { fullname, email, password, role, phoneNumber, employeeId } = req.body;
@@ -36,13 +36,11 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'Admin registration requires phone number and employee ID.' });
     }
 
-    // Check for duplicate email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: `The email '${email}' is already in use. Please use a different email.` });
+      return res.status(400).json({ error: `The email '${email}' is already in use.` });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
@@ -64,9 +62,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-/**
- * LOGIN ROUTE
- */
+// =================== LOGIN ===================
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -78,7 +74,7 @@ app.post('/api/login', async (req, res) => {
     if (!isMatch) return res.status(400).json({ error: 'Invalid email or password.' });
 
     if (user.role !== 'super-admin' && user.role !== role) {
-      return res.status(403).json({ error: `Forbidden: You are not authorized to login as ${role}.` });
+      return res.status(403).json({ error: `You are not authorized to login as ${role}.` });
     }
 
     if (user.role === 'admin' && !user.isApproved) {
@@ -107,14 +103,11 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-/**
- * PROTECTED ROUTES
- */
+// =================== PROTECTED ROUTES ===================
 app.use('/api/users', verifyToken, userRoutes);
+app.use('/api/files', verifyToken, fileRoutes);
 
-/**
- * ONE-TIME SUPER ADMIN CREATION
- */
+// =================== ONE-TIME SUPER ADMIN CREATION ===================
 app.post('/api/create-super-admin', async (req, res) => {
   try {
     const { fullname, email, password } = req.body;
@@ -143,5 +136,5 @@ app.post('/api/create-super-admin', async (req, res) => {
   }
 });
 
-// Start Server
+// =================== START SERVER ===================
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
