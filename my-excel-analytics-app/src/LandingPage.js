@@ -118,7 +118,7 @@ const LandingPage = () => {
       {/* Header/Navbar */}
       <header className="fixed top-0 left-0 w-full z-50 py-4 px-6 md:px-12 flex justify-between items-center bg-gray-800 dark:bg-white bg-opacity-90 dark:bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-lg transition-colors duration-500">
         <div className="text-2xl font-bold text-blue-400">
-          Sheet <span className="text-green-400">Insights</span>
+          Excel <span className="text-green-400">Analytics</span>
         </div>
         <nav className="hidden md:flex space-x-6">
           <a

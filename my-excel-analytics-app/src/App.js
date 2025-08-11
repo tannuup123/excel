@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import LandingPage from "./LandingPage";
 import LoginPage from "./LoginPage";
 import RegistrationPage from "./RegistrationPage";
@@ -19,8 +19,20 @@ import PrivateRoute from "./PrivateRoute";
 import Footer from "./Footer";
 
 const App = () => {
+  const location = useLocation();
+
+  const hideFooterRoutes = [
+    "/user-dashboard",
+    "/admin-dashboard",
+    "/super-admin",
+    "/login",
+    "/register",
+  ];
+
+  const shouldHideFooter = hideFooterRoutes.includes(location.pathname);
+
   return (
-    <Router>
+    <>
       <div className="bg-gray-100 min-h-screen">
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -44,8 +56,8 @@ const App = () => {
           <Route path="/pricing" element={<PricingPage />} />
         </Routes>
       </div>
-      <Footer />
-    </Router>
+      {!shouldHideFooter && <Footer />}
+    </>
   );
 };
 
