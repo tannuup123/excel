@@ -457,7 +457,7 @@ const UserDashboard = () => {
                 <FaUpload className="text-green-500 text-4xl" />
                 <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
                   Drag and drop your Excel file here or{" "}
-                  <span className="text-indigo-500 underline">
+                  <span className="text-green-500 underline">
                     click to upload
                   </span>
                 </span>

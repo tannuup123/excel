@@ -11,28 +11,28 @@ import { useNavigate } from "react-router-dom";
 
 const SuperAdminDashboard = () => {
   const [users, setUsers] = useState([]);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [activeSection, setActiveSection] = useState("dashboard");
   const navigate = useNavigate();
+  const role = "super-admin";
 
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
-    if (userRole !== "super-admin") {
+    const token = localStorage.getItem("token");
+    if (userRole !== "super-admin" || !token) {
       navigate("/login");
     }
   }, [navigate]);
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/users");
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-      } else {
-        alert("Failed to fetch users.");
-      }
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      alert("An error occurred while fetching users.");
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://localhost:5000/api/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setUsers(await res.json());
+      else console.error("Failed to fetch users");
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -40,182 +40,214 @@ const SuperAdminDashboard = () => {
     fetchUsers();
   }, []);
 
-  const handleRoleChange = async (userId, newRole) => {
-    if (!window.confirm(`Change this user's role to ${newRole}?`)) return;
+  useEffect(() => {
+    if (activeSection === "manage-users") {
+      fetchUsers();
+    }
+  }, [activeSection]);
 
+  const handleRoleChange = async (id, newRole) => {
+    if (!window.confirm(`Change this user's role to ${newRole}?`)) return;
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/users/${userId}/role`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ role: newRole }),
-        }
-      );
-      if (response.ok) {
-        alert("User role updated successfully!");
-        fetchUsers();
-      } else {
-        alert("Failed to update user role.");
-      }
-    } catch (error) {
-      console.error("Error updating role:", error);
-      alert("An error occurred while updating the role.");
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/users/${id}/role`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+      if (res.ok) fetchUsers();
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm("Are you sure?")) return;
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/users/${userId}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (response.ok) {
-        alert("User deleted successfully!");
-        fetchUsers();
-      } else {
-        alert("Failed to delete user.");
-      }
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("An error occurred while deleting the user.");
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:5000/api/users/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) fetchUsers();
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("userRole");
+    localStorage.removeItem("token");
     navigate("/", { replace: true });
   };
 
   return (
     <div className="flex h-screen bg-gray-900 text-white">
       {/* Sidebar */}
-      <aside
-        className={`bg-gray-800 p-4 flex flex-col items-center transition-all duration-300 ease-in-out 
-        ${isSidebarExpanded ? "w-64" : "w-20"}`}
-        onMouseEnter={() => setIsSidebarExpanded(true)}
-        onMouseLeave={() => setIsSidebarExpanded(false)}
-      >
-        <div className="mb-10 flex flex-col items-center">
-          <div className="bg-red-500 p-3 rounded-full shadow-lg mb-2 transition-transform duration-300 hover:scale-110">
-            <FaUserShield size={24} />
+      <aside className="w-64 bg-slate-900 border-r border-slate-700 p-6 flex flex-col items-center">
+        <div className="flex flex-col items-center space-y-2 mb-12">
+          <div className="bg-red-500 p-3 rounded-full shadow-lg">
+            <FaUserShield size={26} />
           </div>
-          {isSidebarExpanded && (
-            <span className="text-lg font-bold">Super Admin</span>
-          )}
+          <span className="text-lg font-bold">Super Admin</span>
+          <span className="px-3 py-1 bg-red-600 rounded-full text-sm">
+            {role.toUpperCase()}
+          </span>
         </div>
 
-        {/* Sidebar Nav */}
         <nav className="flex flex-col space-y-4 w-full">
-          {[
-            { icon: <FaChartLine size={28} />, label: "Dashboard" },
-            { icon: <FaUsers size={28} />, label: "Manage Users" },
-            { icon: <FaCog size={28} />, label: "Settings" },
-          ].map((item, index) => (
-            <a
-              key={index}
-              href="#"
-              className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              {item.icon}
-              {isSidebarExpanded && <span>{item.label}</span>}
-            </a>
-          ))}
+          <button
+            onClick={() => setActiveSection("dashboard")}
+            className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+              activeSection === "dashboard"
+                ? "bg-red-600 text-white"
+                : "hover:bg-slate-800"
+            }`}
+          >
+            <FaChartLine />
+            <span>Dashboard</span>
+          </button>
+          <button
+            onClick={() => setActiveSection("manage-users")}
+            className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+              activeSection === "manage-users"
+                ? "bg-red-600 text-white"
+                : "hover:bg-slate-800"
+            }`}
+          >
+            <FaUsers />
+            <span>Manage Users</span>
+          </button>
+          <button
+            onClick={() => setActiveSection("settings")}
+            className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+              activeSection === "settings"
+                ? "bg-red-600 text-white"
+                : "hover:bg-slate-800"
+            }`}
+          >
+            <FaCog />
+            <span>Settings</span>
+          </button>
         </nav>
 
-        {/* Logout button */}
         <div className="mt-auto w-full">
           <button
             onClick={handleLogout}
-            className={`
-    flex items-center justify-center space-x-3 p-3 rounded-lg w-full
-    text-white bg-transparent
-    transition-all duration-300
-    hover:bg-red-500 
-  `}
+            className="flex items-center justify-center space-x-3 p-3 rounded-lg w-full border border-red-500 text-red-400 hover:bg-red-600 hover:text-white transition-all duration-300"
           >
             <FaSignOutAlt />
-            {isSidebarExpanded && <span>Logout</span>}
+            <span>Logout</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-8 overflow-y-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold">Manage Users</h1>
-        </header>
+        {activeSection === "dashboard" && (
+          <>
+            <header className="mb-8 border-b border-red-500 pb-2">
+              <h1 className="text-3xl font-bold text-red-400">
+                Super Admin Dashboard
+              </h1>
+            </header>
 
-        <div className="bg-gray-800 p-6 rounded-lg shadow-md overflow-x-auto">
-          <h2 className="text-xl font-bold mb-4">All Registered Users</h2>
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
-                  Full Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {users.map((user) => (
-                <tr key={user._id} className="transition hover:bg-gray-700">
-                  <td className="px-6 py-4">{user.fullname}</td>
-                  <td className="px-6 py-4">{user.email}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${
-                        user.role === "super-admin"
-                          ? "bg-red-800 text-red-100"
-                          : user.role === "admin"
-                          ? "bg-indigo-600 text-indigo-100"
-                          : "bg-green-600 text-green-100"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium">
-                    <div className="flex space-x-2">
+            {/* Dashboard Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-slate-800 p-6 rounded-lg shadow-md border border-slate-700">
+                <h2 className="text-gray-300">Registered Users</h2>
+                <p className="text-3xl font-bold mt-2">{users.length}</p>
+              </div>
+              <div className="bg-slate-800 p-6 rounded-lg shadow-md border border-slate-700">
+                <h2 className="text-gray-300">Total Projects</h2>
+                <p className="text-3xl font-bold mt-2">250</p>
+              </div>
+              <div className="bg-slate-800 p-6 rounded-lg shadow-md border border-slate-700">
+                <h2 className="text-gray-300">Pending Tasks</h2>
+                <p className="text-3xl font-bold mt-2">15</p>
+              </div>
+            </div>
+
+            {/* Chart Placeholder */}
+            <div className="bg-slate-800 p-6 rounded-lg shadow-md border border-slate-700">
+              <h2 className="text-xl font-bold mb-4">System Overview</h2>
+              <div className="h-64 bg-slate-700 rounded-lg flex items-center justify-center">
+                <p className="text-gray-300">This is the Chart Area</p>
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeSection === "manage-users" && (
+          <div className="bg-slate-800 p-6 rounded-lg shadow-md mb-8 overflow-x-auto border border-slate-700">
+            <h2 className="text-xl font-bold mb-4 text-red-400">
+              All Registered Users
+            </h2>
+            <table className="min-w-full divide-y divide-slate-700">
+              <thead>
+                <tr>
+                  <th className="px-6 py-3">Full Name</th>
+                  <th className="px-6 py-3">Email</th>
+                  <th className="px-6 py-3">Role</th>
+                  <th className="px-6 py-3">Approved</th>
+                  <th className="px-6 py-3">Joined</th>
+                  <th className="px-6 py-3">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u._id} className="hover:bg-slate-700">
+                    <td className="px-6 py-4">{u.fullname}</td>
+                    <td className="px-6 py-4">{u.email}</td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                          u.role === "super-admin"
+                            ? "bg-red-800 text-white"
+                            : u.role === "admin"
+                            ? "bg-indigo-600 text-white"
+                            : "bg-green-600 text-white"
+                        }`}
+                      >
+                        {u.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">{u.isApproved ? "✅" : "❌"}</td>
+                    <td className="px-6 py-4">
+                      {new Date(u.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 flex items-center space-x-2">
                       <select
+                        value={u.role}
                         onChange={(e) =>
-                          handleRoleChange(user._id, e.target.value)
+                          handleRoleChange(u._id, e.target.value)
                         }
                         className="bg-gray-700 text-white p-1 rounded"
-                        value={user.role}
                       >
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                         <option value="super-admin">Super Admin</option>
                       </select>
                       <button
-                        onClick={() => handleDeleteUser(user._id)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
+                        onClick={() => handleDeleteUser(u._id)}
+                        className="text-red-400 hover:text-red-600"
                       >
                         <FaTrash />
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeSection === "settings" && (
+          <h2 className="text-xl font-bold">Settings Panel</h2>
+        )}
       </main>
     </div>
   );
