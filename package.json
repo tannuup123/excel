@@ -1,5 +1,16 @@
 {
+  "name": "excel-analytics-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd backend && npm run dev",
+    "client": "cd my-excel-analytics-app && npm start"
+  },
   "dependencies": {
     "axios": "^1.11.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
   }
 }

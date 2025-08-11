@@ -46,6 +46,32 @@ const SuperAdminDashboard = () => {
     }
   }, [activeSection]);
 
+  const handleApprovalChange = async (id, newApprovalStatus) => {
+  if (!window.confirm(`Are you sure to ${newApprovalStatus ? "approve" : "disapprove"} this user?`)) return;
+
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`http://localhost:5000/api/users/${id}/approve`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ isApproved: newApprovalStatus }),
+    });
+
+    if (res.ok) {
+      fetchUsers();
+    } else {
+      console.error("Failed to update approval");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
+
   const handleRoleChange = async (id, newRole) => {
     if (!window.confirm(`Change this user's role to ${newRole}?`)) return;
     try {
@@ -214,6 +240,10 @@ const SuperAdminDashboard = () => {
                       >
                         {u.role}
                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                    <input type="checkbox" checked={u.isApproved}
+                    onChange={() => handleApprovalChange(u._id, !u.isApproved)}/> 
                     </td>
                     <td className="px-6 py-4">{u.isApproved ? "✅" : "❌"}</td>
                     <td className="px-6 py-4">

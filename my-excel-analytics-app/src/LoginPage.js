@@ -32,6 +32,8 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // console.log("Sending login data:", formData);
+
     try {
       const response = await fetch("http://localhost:5000/api/login", {
         method: "POST",

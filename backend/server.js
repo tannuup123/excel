@@ -79,6 +79,10 @@ app.post("/api/register", async (req, res) => {
 
 // =================== LOGIN ===================
 app.post("/api/login", async (req, res) => {
+
+  // console.log("Login request body:", req.body);  // <--- Add this line
+
+
   try {
     const { email, password, role } = req.body;
     const user = await User.findOne({ email });
