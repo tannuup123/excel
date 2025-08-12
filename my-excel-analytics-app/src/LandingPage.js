@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { DarkModeContext } from "./contexts/DarkModeContext";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactTyped } from "react-typed";
@@ -27,16 +28,9 @@ const CompanyLogo = ({ name }) => (
 );
 
 const LandingPage = () => {
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
-
+  const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
   const [startTyping, setStartTyping] = useState(false);
   const [key, setKey] = useState(0);
-
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 50 },
@@ -52,12 +46,8 @@ const LandingPage = () => {
       id: "basic",
       name: "Basic",
       monthly: 19,
-      yearly: 19 * 10, // 2 months free discount
-      features: [
-        "Up to 5 Excel Files",
-        "Basic Visualizations",
-        "Standard Support",
-      ],
+      yearly: 19 * 10,
+      features: ["Up to 5 Excel Files", "Basic Visualizations", "Standard Support"],
       ctaText: "Get Started",
       ctaLink: "/register",
       ctaClass: "bg-green-500 hover:bg-green-600",
@@ -100,14 +90,15 @@ const LandingPage = () => {
     },
   ];
 
-  useEffect(() => {
-    const html = document.documentElement;
-    if (theme === "dark") {
-      html.classList.add("dark");
-    } else {
-      html.classList.remove("dark");
-    }
-  }, [theme]);
+  // This useEffect now uses isDarkMode from the context
+  // useEffect(() => {
+  //   const html = document.documentElement;
+  //   if (isDarkMode) {
+  //     html.classList.add("dark");
+  //   } else {
+  //     html.classList.remove("dark");
+  //   }
+  // }, [isDarkMode]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -153,11 +144,13 @@ const LandingPage = () => {
           </a>
         </nav>
         <div className="flex items-center space-x-4">
+          {/* Now using the toggleDarkMode function from the context */}
           <button
-            onClick={toggleTheme}
+            onClick={toggleDarkMode}
             className="p-2 rounded-full text-gray-300 dark:text-gray-700 hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors duration-300"
           >
-            {theme === "dark" ? (
+            {/* Now using the isDarkMode state from the context */}
+            {isDarkMode ? (
               <FaSun className="h-5 w-5" />
             ) : (
               <FaMoon className="h-5 w-5" />
@@ -497,12 +490,19 @@ const LandingPage = () => {
                   onClick={() => setSelectedPlan(plan.id)}
                   whileHover={{ scale: 1.05 }}
                   className={`cursor-pointer p-8 rounded-2xl shadow-xl flex flex-col justify-between border-4
-                  ${
-                    isSelected
-                      ? "border-blue-400 shadow-2xl"
-                      : "border-transparent"
-                  }
-                  ${plan.bgClass}`}
+                    ${
+                      isSelected
+                        ? "border-blue-400 shadow-2xl"
+                        : "border-transparent"
+                    }
+                    ${plan.bgClass}`}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      setSelectedPlan(plan.id);
+                    }
+                  }}
                 >
                   <div>
                     <h3

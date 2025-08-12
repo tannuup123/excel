@@ -1,33 +1,43 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSun, FaMoon } from "react-icons/fa";
+import { FaSun, FaMoon, FaEyeSlash, FaEye } from "react-icons/fa";
+import { DarkModeContext } from './contexts/DarkModeContext'; 
 
 const LoginPage = () => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext); 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState(''); 
+  const [error, setError] = useState(''); // Error state 
+  const [showPassword, setShowPassword] = useState(false); 
+  // const [isDarkMode, setIsDarkMode] = useState(true);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     role: "user",
   });
   const navigate = useNavigate();
+  const togglePasswordVisibility = () => { 
+    setShowPassword(!showPassword); 
+  }; 
 
-  useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add("dark-mode");
-      document.body.classList.remove("light-mode");
-    } else {
-      document.body.classList.add("light-mode");
-      document.body.classList.remove("dark-mode");
-    }
-  }, [isDarkMode]);
+  // useEffect(() => {
+  //   if (isDarkMode) {
+  //     document.body.classList.remove("light");
+  //     document.body.classList.add("dark");
+  //   } else {
+  //     document.body.classList.remove("dark");
+  //     document.body.classList.add("light");
+      
+  //   }
+  // }, [isDarkMode]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+  // const toggleDarkMode = () => {
+  //   setIsDarkMode(!isDarkMode);
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,12 +54,20 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
-      console.log("Server Response:", data);
+      // console.log("Server Response:", data);
 
       if (!response.ok) {
-        alert(data.message || data.msg || "Login failed");
-        return;
-      }
+  const errorMsg = data.error || 'Login failed. Please try again.';
+
+  if (errorMsg.toLowerCase().includes('invalid')) {
+    setError('Invalid email or password. Please try again.');
+  } else {
+    setError(errorMsg);
+  }
+  return;
+}
+
+
 
       // ✅ Store token & user info
       if (data.token) {
@@ -107,19 +125,20 @@ const LoginPage = () => {
       <div className="glass-container p-10 rounded-2xl shadow-2xl max-w-lg w-full text-center border border-white border-opacity-20 backdrop-filter backdrop-blur-lg">
         <div className="p-8 rounded-xl">
           <h2
-            className={`text-3xl font-bold mb-6 ${
+            className={`text-3xl font-bold mb-10 ${
               isDarkMode ? "text-white" : "text-gray-900"
             }`}
           >
             Welcome Back!
           </h2>
-          <p
+          {/* <p
             className={`mb-8 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
           >
             Please log in to your account.
-          </p>
+          </p> */}
 
           <form onSubmit={handleSubmit}>
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>} 
             <div className="mb-4">
               <input
                 type="email"
@@ -135,9 +154,9 @@ const LoginPage = () => {
                 required
               />
             </div>
-            <div className="mb-6">
+            <div className="mb-6 relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -147,8 +166,13 @@ const LoginPage = () => {
                     ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
                     : "bg-white border-gray-300 text-gray-800 placeholder-gray-400"
                 }`}
-                required
-              />
+                required/>
+              <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
 
             {/* Role Selection */}
@@ -201,9 +225,15 @@ const LoginPage = () => {
               type="submit"
               className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700 transition-colors duration-300 tracking-wide"
             >
-              Sign In
+              Login
             </button>
           </form>
+        </div>
+
+        <div className="flex items-center my-4">
+        <hr className="flex-grow border-gray-300 dark:border-gray-500" />
+        <span className="mx-4 text-gray-500">OR</span>
+        <hr className="flex-grow border-gray-300 dark:border-gray-500" />
         </div>
 
         {/* Register Section */}

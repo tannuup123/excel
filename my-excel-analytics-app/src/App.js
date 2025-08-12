@@ -17,6 +17,7 @@ import FeaturesPage from "./FeaturesPage";
 import PricingPage from "./PricingPage";
 import PrivateRoute from "./PrivateRoute";
 import Footer from "./Footer";
+// import { DarkModeProvider } from "./contexts/DarkModeContext"; //just added
 
 const App = () => {
   const location = useLocation();
@@ -33,7 +34,7 @@ const App = () => {
 
   return (
     <>
-      <div className="bg-gray-100 min-h-screen">
+      <div className="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-300">
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useContext } from "react";
 import Plotly from "react-plotly.js";
 import { Typed } from "react-typed";
 import {
@@ -32,6 +32,8 @@ import {
 } from "chart.js";
 import { motion } from "framer-motion";
 import clsx from "clsx";
+import { DarkModeContext } from './contexts/DarkModeContext'; 
+
 
 ChartJS.register(
   CategoryScale,
@@ -70,15 +72,17 @@ const UserDashboard = () => {
     lastActive: "Never",
   });
   const [aiInsight, setAiInsight] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  // const [isDarkMode, setIsDarkMode] = useState(true);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  // Use the global context
+  const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
 
-  const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
+  // const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
   // ----- Dark mode effect -----
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDarkMode);
-  }, [isDarkMode]);
+  // useEffect(() => {
+  //   document.documentElement.classList.toggle("dark", isDarkMode);
+  // }, [isDarkMode]);
 
   // ----- Fetch user + files -----
   useEffect(() => {
@@ -742,7 +746,7 @@ const UserDashboard = () => {
             <FaChartPie className="text-4xl" />
           </motion.div>
           {isSidebarExpanded && (
-            <span className="text-2xl font-bold text-white truncate ml-2">
+            <span className="text-2xl font-bold text:black dark:text-white truncate ml-2">
               Sheet <span className=" text-green-500">Insights</span>
             </span>
           )}
@@ -847,7 +851,7 @@ const UserDashboard = () => {
             onClick={handleLogout}
             className={`
               flex items-center justify-center space-x-3 p-3 rounded-lg w-full
-              text-white bg-transparent
+              text-black dark:text-white hover:text-white bg-transparent
               transition-all duration-300
               hover:bg-red-500 
             `}
