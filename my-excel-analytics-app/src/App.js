@@ -17,7 +17,7 @@ import FeaturesPage from "./FeaturesPage";
 import PricingPage from "./PricingPage";
 import PrivateRoute from "./PrivateRoute";
 import Footer from "./Footer";
-// import { DarkModeProvider } from "./contexts/DarkModeContext"; //just added
+import ResetPasswordPage from "./ResetPasswordPage";
 
 const App = () => {
   const location = useLocation();
@@ -28,9 +28,10 @@ const App = () => {
     "/super-admin",
     "/login",
     "/register",
+    "/reset-password"
   ];
 
-  const shouldHideFooter = hideFooterRoutes.includes(location.pathname);
+  const shouldHideFooter = hideFooterRoutes.some(route => location.pathname.startsWith(route));
 
   return (
     <>
@@ -40,11 +41,14 @@ const App = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegistrationPage />} />
 
+          {/* Protected Routes */}
           <Route path="/" element={<PrivateRoute />}>
             <Route path="/super-admin" element={<SuperAdminDashboard />} />
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/user-dashboard" element={<UserDashboard />} />
           </Route>
+
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
           <Route path="/about-us" element={<AboutUsPage />} />
           <Route path="/contact-us" element={<ContactUsPage />} />

@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema({
   phoneNumber: { type: String },
   employeeId: { type: String },
   isApproved: { type: Boolean, default: false },
+  passwordResetToken: String, 
+  passwordResetExpires: Date, 
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

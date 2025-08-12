@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require('crypto'); // Built-in Node.js module just added
+const nodemailer = require('nodemailer'); // Install with: npm install nodemailer just added
 require("dotenv").config();
 
 const verifyToken = require("./middleware/verifyToken");
@@ -122,6 +124,76 @@ app.post("/api/login", async (req, res) => {
   } catch (error) {
     console.error("❌ Login failed:", error);
     res.status(500).json({ error: "Server error during login." });
+  }
+});
+
+// =================== FORGOT PASSWORD ===================
+app.post("/api/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  let user; 
+  try {
+    user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User with that email does not exist.' });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.passwordResetExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+    const transporter = nodemailer.createTransport({
+      service: 'Gmail',
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD
+      }
+    });
+
+    const mailOptions = {
+      to: user.email,
+      from: process.env.EMAIL_USERNAME,
+      subject: 'Password Reset',
+      html: `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p>
+             <p>Please click on the following link, or paste this into your browser to complete the process within one hour:</p>
+             <a href="${resetURL}">Reset Password</a>`
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: 'Password reset email sent.' });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'There was an error sending the email.' });
+  }
+});
+
+// =================== RESET PASSWORD ===================
+app.post("/api/reset-password/:token", async (req, res) => {
+  const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+  try {
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: 'Token is invalid or has expired.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    user.password = hashedPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'Password has been reset successfully.' });
+
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to reset password.' });
   }
 });
 
