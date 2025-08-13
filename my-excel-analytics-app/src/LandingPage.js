@@ -19,6 +19,7 @@ import {
   FaSun,
   FaMoon,
   FaStar,
+  FaChartBar,
 } from "react-icons/fa";
 
 const CompanyLogo = ({ name }) => (
@@ -47,7 +48,11 @@ const LandingPage = () => {
       name: "Basic",
       monthly: 19,
       yearly: 19 * 10,
-      features: ["Up to 5 Excel Files", "Basic Visualizations", "Standard Support"],
+      features: [
+        "Up to 5 Excel Files",
+        "Basic Visualizations",
+        "Standard Support",
+      ],
       ctaText: "Get Started",
       ctaLink: "/register",
       ctaClass: "bg-green-500 hover:bg-green-600",
@@ -108,16 +113,18 @@ const LandingPage = () => {
     <div className="bg-gray-900 dark:bg-gray-100 text-gray-100 dark:text-gray-900 font-sans leading-relaxed transition-colors duration-500">
       {/* Header/Navbar */}
       <header className="fixed top-0 left-0 w-full z-50 py-4 px-6 md:px-12 flex justify-between items-center bg-gray-800 dark:bg-white bg-opacity-90 dark:bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-lg transition-colors duration-500">
-        <Link to="/"><div className="flex items-center space-x-2">
-          <img
-            src="/Sheet insights favicon.jpg"
-            alt="Sheet Insights Logo"
-            className="w-8 h-8"
-          />
-          <div className="text-2xl font-bold text-blue-400">
-            Sheet<span className="text-green-400">Insights</span>
+        <Link to="/">
+          <div className="flex items-center space-x-2">
+            <div className="text-green-600 dark:text-green-400 cursor-pointer select-none">
+              <FaTable className="text-4xl" />
+            </div>
+
+            <span className="text-2xl font-bold truncate ml-2">
+              <span className="text-white dark:text-black">Sheet</span>{" "}
+              <span className="text-green-500">Insights</span>
+            </span>
           </div>
-        </div></Link>
+        </Link>
 
         <nav className="hidden md:flex space-x-6">
           <a
@@ -498,9 +505,10 @@ const LandingPage = () => {
                   onClick={() => setSelectedPlan(plan.id)}
                   whileHover={{ scale: 1.05 }}
                   className={`cursor-pointer p-8 rounded-2xl shadow-xl flex flex-col justify-between border-4
-                    ${isSelected
-                      ? "border-blue-400 shadow-2xl"
-                      : "border-transparent"
+                    ${
+                      isSelected
+                        ? "border-blue-400 shadow-2xl"
+                        : "border-transparent"
                     }
                     ${plan.bgClass}`}
                   role="button"
@@ -549,19 +557,21 @@ const LandingPage = () => {
                     </ul>
                   </div>
                   {plan.ctaLink.startsWith("http") ||
-                    plan.ctaLink.startsWith("#") ? (
+                  plan.ctaLink.startsWith("#") ? (
                     <a
                       href={plan.ctaLink}
-                      className={`px-6 py-3 rounded-full font-semibold mt-auto text-white transition-colors duration-300 ${isSelected ? "bg-blue-600" : plan.ctaClass
-                        }`}
+                      className={`px-6 py-3 rounded-full font-semibold mt-auto text-white transition-colors duration-300 ${
+                        isSelected ? "bg-blue-600" : plan.ctaClass
+                      }`}
                     >
                       {plan.ctaText}
                     </a>
                   ) : (
                     <Link
                       to={plan.ctaLink}
-                      className={`px-6 py-3 rounded-full font-semibold mt-auto text-white transition-colors duration-300 ${isSelected ? "bg-blue-600" : plan.ctaClass
-                        }`}
+                      className={`px-6 py-3 rounded-full font-semibold mt-auto text-white transition-colors duration-300 ${
+                        isSelected ? "bg-blue-600" : plan.ctaClass
+                      }`}
                     >
                       {plan.ctaText}
                     </Link>

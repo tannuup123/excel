@@ -10,6 +10,7 @@ import {
   FaPhone,
   FaEnvelope,
   FaMapMarkerAlt,
+  FaTable,
 } from "react-icons/fa";
 
 const CompanyLogo = ({ name }) => (
@@ -67,8 +68,15 @@ const ContactPage = () => {
     <div className="bg-gray-900 dark:bg-gray-100 text-gray-100 dark:text-gray-900 font-sans leading-relaxed transition-colors duration-500">
       {/* Header/Navbar */}
       <header className="fixed top-0 left-0 w-full z-50 py-4 px-6 md:px-12 flex justify-between items-center bg-gray-800 dark:bg-white bg-opacity-90 dark:bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-lg transition-colors duration-500">
-        <div className="text-2xl font-bold text-blue-400">
-          Excel<span className="text-green-400">Analytics</span>
+        <div className="flex items-center space-x-2">
+          <div className="text-green-600 dark:text-green-400 cursor-pointer select-none">
+            <FaTable className="text-4xl" />
+          </div>
+
+          <span className="text-2xl font-bold truncate ml-2">
+            <span className="text-white dark:text-black">Sheet</span>{" "}
+            <span className="text-green-500">Insights</span>
+          </span>
         </div>
         <nav className="hidden md:flex space-x-6">
           <Link

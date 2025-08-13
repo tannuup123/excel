@@ -43,6 +43,45 @@ const AdminDashboard = () => {
     navigate("/", { replace: true });
   };
 
+  // const handleEditUser = (user) => {
+  //   // Example: navigate to edit form or open modal
+  //   console.log("Editing user:", user);
+  //   // navigate(`/edit-user/${user._id}`);
+  // };
+
+  const handleDeleteUser = async (userId) => {
+    // Confirm deletion with the user
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `http://localhost:5000/api/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        // Update the users state by removing the deleted user
+        setUsers((prevUsers) =>
+          prevUsers.filter((user) => user._id !== userId)
+        );
+        alert("User deleted successfully");
+      } else {
+        const error = await response.json();
+        console.error("Failed to delete user:", error);
+        alert(`Failed to delete user: ${error.message || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      alert("An error occurred while deleting the user.");
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-900 text-white">
       {/* Sidebar */}
@@ -129,36 +168,66 @@ const AdminDashboard = () => {
         )}
 
         {activeSection === "manage-users" && (
-          <div className="bg-blue-800 p-6 rounded-lg shadow-md mb-8 overflow-x-auto border border-blue-600">
+          <div className="bg-transparent p-6 rounded-lg shadow-md mb-8 overflow-x-auto border border-blue-800">
             <h2 className="text-xl font-bold mb-4 text-teal-300">
               All Registered Users
             </h2>
-            <table className="min-w-full divide-y divide-blue-700">
+            <table className="min-w-full text-sm table-auto bg-gray-800 border border-gray-300/20">
               <thead>
-                <tr>
-                  <th className="px-6 py-3">Full Name</th>
-                  <th className="px-6 py-3">Email</th>
-                  <th className="px-6 py-3">Role</th>
-                  <th className="px-6 py-3">Approved</th>
-                  <th className="px-6 py-3">Joined</th>
+                <tr className="bg-gray-700">
+                  <th className="px-6 py-3 text-center text-gray-200 border border-gray-300/20">
+                    Full Name
+                  </th>
+                  <th className="px-6 py-3 text-center text-gray-200 border border-gray-300/20">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-center text-gray-200 border border-gray-300/20">
+                    Role
+                  </th>
+                  <th className="px-6 py-3 text-center text-gray-200 border border-gray-300/20">
+                    Approved
+                  </th>
+                  <th className="px-6 py-3 text-center text-gray-200 border border-gray-300/20">
+                    Joined
+                  </th>
+                  <th className="px-6 py-3 text-center text-gray-200 border border-gray-300/20">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {users
-                  .filter((u) => u.role === "user") // Only show regular users
-                  .map((u) => (
-                    <tr key={u._id} className="hover:bg-blue-700">
-                      <td className="px-6 py-4">{u.fullname}</td>
-                      <td className="px-6 py-4">{u.email}</td>
-                      <td className="px-6 py-4">{u.role}</td>
-                      <td className="px-6 py-4">
-                        {u.isApproved ? "✅" : "❌"}
-                      </td>
-                      <td className="px-6 py-4">
-                        {new Date(u.createdAt).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
+                {users.map((u) => (
+                  <tr key={u._id} className="hover:bg-blue-900/10 transition">
+                    <td className="px-6 py-4 border border-gray-300/20 text-left">
+                      {u.fullname}
+                    </td>
+                    <td className="px-6 py-4 border border-gray-300/20 text-left">
+                      {u.email}
+                    </td>
+                    <td className="px-6 py-4 border border-gray-300/20 text-center">
+                      {u.role}
+                    </td>
+                    <td className="px-6 py-4 border border-gray-300/20 text-center">
+                      {u.isApproved ? "✅" : "❌"}
+                    </td>
+                    <td className="px-6 py-4 border border-gray-300/20 text-center">
+                      {new Date(u.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 border border-gray-300/20 text-center">
+                      <div className="flex justify-center gap-2">
+                        {/* <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">
+                          Edit
+                        </button> */}
+                        <button
+                          onClick={() => handleDeleteUser(u._id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

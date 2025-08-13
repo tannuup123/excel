@@ -81,7 +81,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="dashboard"
+                  to="/login"
                   className="hover:text-white dark:hover:text-gray-900 transition-colors duration-300 text-sm"
                 >
                   Dashboards
@@ -171,32 +171,48 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-8 text-center text-sm border-t border-gray-700 dark:border-gray-300 pt-6">
-  <div className="flex justify-between items-center px-4">
-    <p>
-      &copy; {new Date().getFullYear()} ExcelAnalytics. All rights reserved.
-    </p>
-    <div className="flex items-center space-x-4">
-      <p>Developed by:</p>
-      <ul className="flex space-x-4">
-        <li>
-          <a href="https://www.linkedin.com/in/rajneeshvrma/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">
-            RAJNEESH
-          </a>
-        </li>
-        <li>
-          <a href="https://www.linkedin.com/in/developer2" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">
-            TANMAY
-          </a>
-        </li>
-        <li>
-          <a href="https://www.linkedin.com/in/developer3" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">
-            LOGESH
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-</div>
+          <div className="flex justify-between items-center px-4">
+            <p>
+              &copy; {new Date().getFullYear()} ExcelAnalytics. All rights
+              reserved.
+            </p>
+            <div className="flex items-center space-x-4">
+              <p>Developed by:</p>
+              <ul className="flex space-x-4">
+                <li>
+                  <a
+                    href="https://www.linkedin.com/in/rajneeshvrma/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-gray-400 transition-colors"
+                  >
+                    RAJNEESH
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.linkedin.com/in/developer2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-gray-400 transition-colors"
+                  >
+                    TANMAY
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.linkedin.com/in/developer3"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-gray-400 transition-colors"
+                  >
+                    LOGESH
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </motion.footer>
     </div>
   );

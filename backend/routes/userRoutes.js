@@ -78,9 +78,9 @@ router.put("/:id/approve", verifyToken, async (req, res) => {
       targetUser.role === "user" &&
       !["admin", "super-admin"].includes(approver.role)
     ) {
-      return res
-        .status(403)
-        .json({ error: "Only admins or super-admins can modify user approval." });
+      return res.status(403).json({
+        error: "Only admins or super-admins can modify user approval.",
+      });
     }
 
     // ✅ 🔄 CHANGED: Now supports both approve (true) and disapprove (false)
@@ -94,13 +94,11 @@ router.put("/:id/approve", verifyToken, async (req, res) => {
       } successfully.`,
       user: targetUser,
     });
-
   } catch (error) {
     console.error("Approval error:", error);
     res.status(500).json({ error: "Failed to update approval status." });
   }
 });
-
 
 /**
  * ✅ Update user role (super-admin only)
@@ -128,19 +126,42 @@ router.put("/:id/role", verifyToken, async (req, res) => {
 });
 
 /**
- * ✅ Delete user (super-admin only)
+ * ✅ Delete user
+ * - super-admin: can delete anyone
+ * - admin: can delete only users (not admins or super-admins)
  */
 router.delete("/:id", verifyToken, async (req, res) => {
-  if (req.user.role !== "super-admin") {
+  const requesterRole = req.user.role;
+
+  // Only admin or super-admin can attempt deletion
+  if (!["admin", "super-admin"].includes(requesterRole)) {
     return res
       .status(403)
-      .json({ error: "Only super-admin can delete users." });
+      .json({
+        error: "Access denied. Only admins or super-admins can delete users.",
+      });
   }
 
   try {
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // If requester is admin, ensure they cannot delete admins or super-admins
+    if (
+      requesterRole === "admin" &&
+      ["admin", "super-admin"].includes(targetUser.role)
+    ) {
+      return res
+        .status(403)
+        .json({ error: "Admins can only delete regular users." });
+    }
+
     await User.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "User deleted successfully." });
   } catch (error) {
+    console.error("Delete error:", error);
     res.status(500).json({ error: "Failed to delete user." });
   }
 });
