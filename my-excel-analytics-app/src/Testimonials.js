@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DarkModeContext } from "./contexts/DarkModeContext"; // Assuming context is available
 import {
   FaQuoteLeft,
   FaStar,
@@ -15,7 +16,7 @@ const testimonials = [
     title: "Data Analyst at Global Solutions",
     img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=250&auto=format&fit=crop&ixlib=rb-4.0.3",
     rating: 5,
-    color: "blue",
+    color: "#60A5FA", // blue-400
   },
   {
     id: 2,
@@ -24,7 +25,7 @@ const testimonials = [
     title: "Operations Manager at Innovate Inc.",
     img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=250&auto=format&fit=crop&ixlib=rb-4.0.3",
     rating: 4,
-    color: "green",
+    color: "#4ADE80", // green-400
   },
   {
     id: 3,
@@ -33,7 +34,7 @@ const testimonials = [
     title: "Business Intelligence Lead at TechCorp",
     img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=100&w=300&h=300&auto=format&fit=crop",
     rating: 5,
-    color: "purple",
+    color: "#A78BFA", // purple-400
   },
   {
     id: 4,
@@ -42,7 +43,7 @@ const testimonials = [
     title: "Project Manager at Innovate Solutions",
     img: "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?q=100&w=800&auto=format&fit=crop",
     rating: 4,
-    color: "orange",
+    color: "#FBBF24", // orange-400
   },
   {
     id: 5,
@@ -51,7 +52,7 @@ const testimonials = [
     title: "Operations Director at NextGen Analytics",
     img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=250&auto=format&fit=crop&ixlib=rb-4.0.3",
     rating: 5,
-    color: "teal",
+    color: "#2DD4BF", // teal-400
   },
 ];
 
@@ -78,34 +79,27 @@ const contentVariants = {
   animate: { opacity: 1, y: 0 },
 };
 
-const getColorClass = (color) => {
-  switch (color) {
-    case "blue":
-      return "text-blue-400 dark:text-blue-600";
-    case "green":
-      return "text-green-400 dark:text-green-600";
-    case "purple":
-      return "text-purple-400 dark:text-purple-600";
-    case "orange":
-      return "text-orange-400 dark:text-orange-600";
-    case "teal":
-      return "text-teal-400 dark:text-teal-600";
-    default:
-      return "text-gray-400 dark:text-gray-600";
-  }
-};
-
 export default function Testimonials() {
+  const { isDarkMode } = useContext(DarkModeContext);
   const [[page, direction], setPage] = useState([0, 1]);
   const timeoutRef = useRef(null);
 
   const testimonialIndex =
     ((page % testimonials.length) + testimonials.length) % testimonials.length;
 
+  const advancePage = () => {
+    setPage(([prevPage]) => [prevPage + 1, 1]);
+  };
+
+  const resetTimeout = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(advancePage, 5000); // Set to 5s to match progress ring
+  };
+
   useEffect(() => {
-    timeoutRef.current = setTimeout(() => {
-      setPage([page + 1, 1]);
-    }, 3000);
+    resetTimeout();
     return () => clearTimeout(timeoutRef.current);
   }, [page]);
 
@@ -124,26 +118,30 @@ export default function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="py-20 bg-gray-800 dark:bg-gray-200 text-center transition-colors duration-500 scroll-mt-24"
+      className="py-20 bg-gray-200 dark:bg-gray-800 text-center transition-colors duration-500 scroll-mt-24"
       aria-label="Customer testimonials"
     >
       <div className="container mx-auto px-6 max-w-3xl">
-        <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">
+        <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
           What Our Customers Say
         </h2>
-        <p className="text-lg text-gray-400 dark:text-gray-600 mb-12">
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-12">
           Hear from our users about how our platform has transformed their data
           workflow.
         </p>
 
-        <div className="relative w-full h-auto min-h-[300px] flex justify-center items-center">
+        <div
+          className="relative w-full h-auto min-h-[300px] flex justify-center items-center"
+          onMouseEnter={() => clearTimeout(timeoutRef.current)}
+          onMouseLeave={resetTimeout}
+        >
           {/* Left Arrow */}
           <button
             aria-label="Previous testimonial"
             onClick={() => paginate(-1)}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 p-3 bg-gray-700 dark:bg-gray-300 rounded-full hover:bg-gray-600 dark:hover:bg-gray-400 transition-colors z-20"
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 p-3 bg-gray-300 dark:bg-gray-700 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors z-20"
           >
-            <FaChevronLeft className="text-white dark:text-gray-900" />
+            <FaChevronLeft className="text-gray-900 dark:text-white" />
           </button>
 
           <AnimatePresence initial={false} custom={direction}>
@@ -155,7 +153,7 @@ export default function Testimonials() {
               animate="center"
               exit="exit"
               transition={{
-                x: { type: "spring", stiffness: 200, damping: 40 }, // slower, softer spring
+                x: { type: "spring", stiffness: 200, damping: 40 },
                 opacity: { duration: 0.4 },
                 scale: { duration: 0.5 },
               }}
@@ -163,36 +161,31 @@ export default function Testimonials() {
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.2}
               onDragEnd={handleDragEnd}
-              className="absolute top-0 left-0 right-0 mx-auto bg-gray-900 dark:bg-white p-8 rounded-2xl shadow-xl text-left max-w-xl cursor-grab select-none"
+              className="absolute top-0 left-0 right-0 mx-auto bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-xl text-left max-w-xl cursor-grab select-none"
               style={{ willChange: "transform, opacity" }}
               aria-live="polite"
             >
-              {/* Your existing testimonial content here */}
-              {/* Quote Icon */}
               <motion.div
                 variants={contentVariants}
                 initial="initial"
                 animate="animate"
                 transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
-                className={`mb-4 text-4xl ${getColorClass(
-                  testimonials[testimonialIndex].color
-                )}`}
+                style={{ color: testimonials[testimonialIndex].color }}
+                className="mb-4 text-4xl"
               >
                 <FaQuoteLeft aria-hidden="true" />
               </motion.div>
 
-              {/* Testimonial Text */}
               <motion.p
                 variants={contentVariants}
                 initial="initial"
                 animate="animate"
                 transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
-                className="italic text-gray-300 dark:text-gray-700 mb-6 select-text"
+                className="italic text-gray-700 dark:text-gray-300 mb-6 select-text"
               >
                 {testimonials[testimonialIndex].text}
               </motion.p>
 
-              {/* Rating Stars */}
               <motion.div
                 variants={contentVariants}
                 initial="initial"
@@ -207,14 +200,13 @@ export default function Testimonials() {
                     className={`mr-1 ${
                       i < testimonials[testimonialIndex].rating
                         ? "text-yellow-400"
-                        : "text-gray-500 dark:text-gray-400"
+                        : "text-gray-400 dark:text-gray-500"
                     }`}
                     aria-hidden="true"
                   />
                 ))}
               </motion.div>
 
-              {/* Profile and Progress Ring */}
               <motion.div
                 variants={contentVariants}
                 initial="initial"
@@ -222,7 +214,6 @@ export default function Testimonials() {
                 transition={{ delay: 0.7, duration: 0.4, ease: "easeOut" }}
                 className="flex items-center relative"
               >
-                {/* Circular Progress SVG */}
                 <svg
                   className="absolute left-0"
                   width="56"
@@ -236,10 +227,11 @@ export default function Testimonials() {
                     cx="28"
                     cy="28"
                     r="26"
-                    stroke="#374151" // Tailwind slate-700
+                    stroke={isDarkMode ? "#374151" : "#D1D5DB"}
                     strokeWidth="4"
                   />
                   <motion.circle
+                    key={testimonialIndex} // Resets animation on slide change
                     cx="28"
                     cy="28"
                     r="26"
@@ -247,9 +239,7 @@ export default function Testimonials() {
                     strokeWidth="4"
                     strokeLinecap="round"
                     strokeDasharray={2 * Math.PI * 26}
-                    strokeDashoffset={0}
                     style={{
-                      strokeDashoffset: 2 * Math.PI * 26,
                       rotate: -90,
                       transformOrigin: "50% 50%",
                     }}
@@ -257,23 +247,22 @@ export default function Testimonials() {
                       strokeDashoffset: [2 * Math.PI * 26, 0],
                     }}
                     transition={{
-                      duration: 5,
+                      duration: 5, // Synced with auto-play timer
                       ease: "linear",
-                      repeat: Infinity,
                     }}
                   />
                 </svg>
 
                 <img
                   src={testimonials[testimonialIndex].img}
-                  alt={`Customer ${testimonials[testimonialIndex].name}`}
+                  alt={testimonials[testimonialIndex].name}
                   className="w-14 h-14 rounded-full mr-4 object-cover relative z-10"
                 />
                 <div className="relative z-10">
-                  <p className="font-semibold text-white dark:text-gray-900 select-text">
+                  <p className="font-semibold text-gray-900 dark:text-white select-text">
                     {testimonials[testimonialIndex].name}
                   </p>
-                  <p className="text-sm text-gray-400 dark:text-gray-600 select-text">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 select-text">
                     {testimonials[testimonialIndex].title}
                   </p>
                 </div>
@@ -285,13 +274,12 @@ export default function Testimonials() {
           <button
             aria-label="Next testimonial"
             onClick={() => paginate(1)}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 p-3 bg-gray-700 dark:bg-gray-300 rounded-full hover:bg-gray-600 dark:hover:bg-gray-400 transition-colors z-20"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 p-3 bg-gray-300 dark:bg-gray-700 rounded-full hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors z-20"
           >
-            <FaChevronRight className="text-white dark:text-gray-900" />
+            <FaChevronRight className="text-gray-900 dark:text-white" />
           </button>
         </div>
 
-        {/* Pagination dots */}
         <div
           className="flex justify-center mt-8 space-x-3"
           role="tablist"
@@ -301,10 +289,10 @@ export default function Testimonials() {
             <button
               key={i}
               onClick={() => setPage([i, i > testimonialIndex ? 1 : -1])}
-              className={`w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              className={`w-3 h-3 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                 i === testimonialIndex
                   ? "bg-yellow-400 ring-yellow-400"
-                  : "bg-gray-500 dark:bg-gray-400"
+                  : "bg-gray-400 dark:bg-gray-500 hover:bg-gray-500 dark:hover:bg-gray-400"
               }`}
               aria-selected={i === testimonialIndex}
               aria-label={`Go to testimonial ${i + 1}`}

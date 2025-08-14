@@ -23,7 +23,7 @@ import {
 } from "react-icons/fa";
 
 const CompanyLogo = ({ name }) => (
-  <div className="text-gray-400 dark:text-gray-500 text-2xl font-semibold opacity-70 hover:opacity-100 transition-opacity duration-300">
+  <div className="text-gray-500 dark:text-gray-400 text-2xl font-semibold opacity-70 hover:opacity-100 transition-opacity duration-300">
     {name}
   </div>
 );
@@ -56,8 +56,8 @@ const LandingPage = () => {
       ctaText: "Get Started",
       ctaLink: "/register",
       ctaClass: "bg-green-500 hover:bg-green-600",
-      bgClass: "bg-gray-800 dark:bg-gray-200",
-      textClass: "text-white dark:text-gray-900",
+      bgClass: "bg-gray-200 dark:bg-gray-800",
+      textClass: "text-gray-900 dark:text-white",
     },
     {
       id: "pro",
@@ -73,8 +73,8 @@ const LandingPage = () => {
       ctaText: "Upgrade Now",
       ctaLink: "/register",
       ctaClass: "bg-blue-500 hover:bg-blue-600",
-      bgClass: "bg-gray-700 dark:bg-gray-300",
-      textClass: "text-white dark:text-gray-900",
+      bgClass: "bg-gray-300 dark:bg-gray-700",
+      textClass: "text-gray-900 dark:text-white",
     },
     {
       id: "enterprise",
@@ -90,37 +90,36 @@ const LandingPage = () => {
       ctaText: "Contact Sales",
       ctaLink: "#contact",
       ctaClass: "bg-yellow-500 hover:bg-yellow-600 text-gray-900",
-      bgClass: "bg-gray-800 dark:bg-gray-200",
-      textClass: "text-white dark:text-gray-900",
+      bgClass: "bg-gray-200 dark:bg-gray-800",
+      textClass: "text-gray-900 dark:text-white",
     },
   ];
 
   // This useEffect now uses isDarkMode from the context
-  // useEffect(() => {
-  //   const html = document.documentElement;
-  //   if (isDarkMode) {
-  //     html.classList.add("dark");
-  //   } else {
-  //     html.classList.remove("dark");
-  //   }
-  // }, [isDarkMode]);
+  useEffect(() => {
+    const html = document.documentElement;
+    if (isDarkMode) {
+      html.classList.add("dark");
+    } else {
+      html.classList.remove("dark");
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   return (
-    <div className="bg-gray-900 dark:bg-gray-100 text-gray-100 dark:text-gray-900 font-sans leading-relaxed transition-colors duration-500">
+    <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed transition-colors duration-500">
       {/* Header/Navbar */}
-      <header className="fixed top-0 left-0 w-full z-50 py-4 px-6 md:px-12 flex justify-between items-center bg-gray-800 dark:bg-white bg-opacity-90 dark:bg-opacity-90 backdrop-filter backdrop-blur-lg shadow-lg transition-colors duration-500">
+      <header className="fixed top-0 left-0 w-full z-50 py-4 px-6 md:px-12 flex justify-between items-center bg-white/75 dark:bg-gray-900/75 backdrop-filter backdrop-blur-lg shadow-lg border-b border-gray-200 dark:border-gray-700 transition-colors duration-500">
         <Link to="/">
           <div className="flex items-center space-x-2">
-            <div className="text-green-600 dark:text-green-400 cursor-pointer select-none">
-              <FaTable className="text-4xl" />
-            </div>
+            <img src="/Sheet insights favicon.png" alt="SheetInsights" className="w-10 h-10 object-contain" />
+
 
             <span className="text-2xl font-bold truncate ml-2">
-              <span className="text-white dark:text-black">Sheet</span>{" "}
+              <span className="text-black dark:text-white">Sheet</span>
               <span className="text-green-500">Insights</span>
             </span>
           </div>
@@ -129,31 +128,31 @@ const LandingPage = () => {
         <nav className="hidden md:flex space-x-6">
           <a
             href="#features"
-            className="text-gray-300 dark:text-gray-700 hover:text-white dark:hover:text-gray-900 transition-colors duration-300"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
           >
             Features
           </a>
           <a
             href="#how-it-works"
-            className="text-gray-300 dark:text-gray-700 hover:text-white dark:hover:text-gray-900 transition-colors duration-300"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
           >
             How It Works
           </a>
           <a
             href="#pricing"
-            className="text-gray-300 dark:text-gray-700 hover:text-white dark:hover:text-gray-900 transition-colors duration-300"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
           >
             Pricing
           </a>
           <a
             href="#testimonials"
-            className="text-gray-300 dark:text-gray-700 hover:text-white dark:hover:text-gray-900 transition-colors duration-300"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
           >
             Testimonials
           </a>
           <a
             href="#faq"
-            className="text-gray-300 dark:text-gray-700 hover:text-white dark:hover:text-gray-900 transition-colors duration-300"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
           >
             FAQ
           </a>
@@ -162,7 +161,7 @@ const LandingPage = () => {
           {/* Now using the toggleDarkMode function from the context */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-full text-gray-300 dark:text-gray-700 hover:bg-gray-700 dark:hover:bg-gray-200 transition-colors duration-300"
+            className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-300"
           >
             {/* Now using the isDarkMode state from the context */}
             {isDarkMode ? (
@@ -173,7 +172,7 @@ const LandingPage = () => {
           </button>
           <Link
             to="/login"
-            className="text-gray-300 dark:text-gray-700 hover:text-white dark:hover:text-gray-900 transition-colors duration-300"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
           >
             Login
           </Link>
@@ -201,10 +200,10 @@ const LandingPage = () => {
         }}
       >
         {/* Static full overlay */}
-        <div className="absolute inset-0 bg-gray-900 dark:bg-white bg-opacity-70 dark:bg-opacity-70 transition-colors duration-500" />
+        <div className="absolute inset-0 bg-white dark:bg-gray-900 bg-opacity-70 dark:bg-opacity-70 transition-colors duration-500" />
 
         {/* Content */}
-        <div className="relative max-w-5xl mx-auto px-6 text-center text-white dark:text-gray-900">
+        <div className="relative max-w-5xl mx-auto px-6 text-center text-gray-900 dark:text-white">
           <h1 className="text-5xl md:text-7xl font-extrabold leading-tight pt-14 mb-6 drop-shadow-md">
             <ReactTyped
               key={key}
@@ -248,10 +247,10 @@ const LandingPage = () => {
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         transition={{ duration: 0.6 }}
-        className="py-16 bg-gray-800 dark:bg-gray-200 text-center transition-colors duration-500"
+        className="py-16 bg-gray-200 dark:bg-gray-800 text-center transition-colors duration-500"
       >
         <div className="container mx-auto px-6">
-          <h3 className="text-xl font-semibold text-gray-400 dark:text-gray-600 mb-8">
+          <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-8">
             Trusted by data teams at leading companies
           </h3>
           <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
@@ -272,20 +271,20 @@ const LandingPage = () => {
         viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         id="features"
-        className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500 scroll-mt-40"
+        className="py-20 bg-white dark:bg-gray-900 transition-colors duration-500 scroll-mt-40"
       >
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Features Built for Data Professionals
           </h2>
-          <p className="text-lg text-gray-400 dark:text-gray-600 mb-12 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-3xl mx-auto">
             From seamless data import to collaborative sharing, our tools are
             designed to streamline your workflow and boost productivity.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {/* Feature 1 */}
             <motion.div
-              className="bg-gray-800 dark:bg-gray-200 p-8 rounded-2xl shadow-xl transform transition-transform duration-300"
+              className="bg-gray-200 dark:bg-gray-800 p-8 rounded-2xl shadow-xl transform transition-transform duration-300"
               whileHover="hover"
               initial="initial"
               variants={{ hover: { scale: 1.05 } }}
@@ -299,10 +298,10 @@ const LandingPage = () => {
               >
                 <FaChartLine className="text-5xl text-blue-400 dark:text-blue-600 mx-auto mb-4" />
               </motion.div>
-              <h3 className="text-2xl font-semibold text-white dark:text-gray-900 mb-2">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
                 Dynamic Dashboards
               </h3>
-              <p className="text-gray-400 dark:text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Build beautiful, interactive dashboards and visualize your data
                 without complex coding.
               </p>
@@ -310,7 +309,7 @@ const LandingPage = () => {
 
             {/* Feature 2 */}
             <motion.div
-              className="bg-gray-800 dark:bg-gray-200 p-8 rounded-2xl shadow-xl transform transition-transform duration-300"
+              className="bg-gray-200 dark:bg-gray-800 p-8 rounded-2xl shadow-xl transform transition-transform duration-300"
               whileHover="hover"
               initial="initial"
               variants={{ hover: { scale: 1.05 } }}
@@ -324,10 +323,10 @@ const LandingPage = () => {
               >
                 <FaTable className="text-5xl text-green-400 dark:text-green-600 mx-auto mb-4" />
               </motion.div>
-              <h3 className="text-2xl font-semibold text-white dark:text-gray-900 mb-2">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
                 Effortless Data Import
               </h3>
-              <p className="text-gray-400 dark:text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Import your .xlsx and .csv files with a single click and start
                 analyzing instantly.
               </p>
@@ -335,7 +334,7 @@ const LandingPage = () => {
 
             {/* Feature 3 */}
             <motion.div
-              className="bg-gray-800 dark:bg-gray-200 p-8 rounded-2xl shadow-xl transform transition-transform duration-300"
+              className="bg-gray-200 dark:bg-gray-800 p-8 rounded-2xl shadow-xl transform transition-transform duration-300"
               whileHover="hover"
               initial="initial"
               variants={{ hover: { scale: 1.05 } }}
@@ -349,10 +348,10 @@ const LandingPage = () => {
               >
                 <FaTools className="text-5xl text-blue-400 dark:text-blue-600 mx-auto mb-4" />
               </motion.div>
-              <h3 className="text-2xl font-semibold text-white dark:text-gray-900 mb-2">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
                 Advanced Analytics
               </h3>
-              <p className="text-gray-400 dark:text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Use our powerful tools to uncover trends, forecast future
                 outcomes, and make smarter decisions.
               </p>
@@ -369,13 +368,13 @@ const LandingPage = () => {
         viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         id="how-it-works"
-        className="py-20 bg-gray-800 dark:bg-gray-200 transition-colors duration-500 scroll-mt-28"
+        className="py-20 bg-gray-200 dark:bg-gray-800 transition-colors duration-500 scroll-mt-28"
       >
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             How It Works
           </h2>
-          <p className="text-lg text-gray-400 dark:text-gray-600 mb-12">
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-12">
             Our platform simplifies the entire process in three easy steps.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
@@ -390,10 +389,10 @@ const LandingPage = () => {
                 alt="Excel File Upload"
                 className="rounded-lg shadow-xl mb-4 h-64 w-full object-cover"
               />
-              <h3 className="text-2xl font-semibold text-white dark:text-gray-900 mb-2">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
                 1. Upload Your Data
               </h3>
-              <p className="text-gray-400 dark:text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Securely upload your Excel files from your local machine or
                 cloud storage.
               </p>
@@ -409,10 +408,10 @@ const LandingPage = () => {
                 alt="Data Visualization"
                 className="rounded-lg shadow-xl mb-4 h-64 w-full object-cover"
               />
-              <h3 className="text-2xl font-semibold text-white dark:text-gray-900 mb-2">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
                 2. Analyze & Visualize
               </h3>
-              <p className="text-gray-400 dark:text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Use our drag-and-drop interface to build powerful
                 visualizations.
               </p>
@@ -428,10 +427,10 @@ const LandingPage = () => {
                 alt="Team Collaboration"
                 className="rounded-lg shadow-xl mb-4 h-64 w-full object-cover"
               />
-              <h3 className="text-2xl font-semibold text-white dark:text-gray-900 mb-2">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
                 3. Share & Collaborate
               </h3>
-              <p className="text-gray-400 dark:text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Share live dashboards with your team and make collaborative
                 decisions.
               </p>
@@ -448,13 +447,13 @@ const LandingPage = () => {
         viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         id="pricing"
-        className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500 scroll-mt-20"
+        className="py-20 bg-white dark:bg-gray-900 transition-colors duration-500 scroll-mt-20"
       >
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Transparent Pricing, Made Simple !
           </h2>
-          <p className="text-lg text-gray-400 dark:text-gray-600 mb-6">
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
             Choose a plan that scales with your team's needs.
           </p>
 
@@ -505,12 +504,11 @@ const LandingPage = () => {
                   onClick={() => setSelectedPlan(plan.id)}
                   whileHover={{ scale: 1.05 }}
                   className={`cursor-pointer p-8 rounded-2xl shadow-xl flex flex-col justify-between border-4
-                    ${
-                      isSelected
-                        ? "border-blue-400 shadow-2xl"
-                        : "border-transparent"
+                      ${isSelected
+                      ? "border-blue-400 shadow-2xl"
+                      : "border-transparent"
                     }
-                    ${plan.bgClass}`}
+                      ${plan.bgClass}`}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
@@ -539,13 +537,13 @@ const LandingPage = () => {
                         "Custom"
                       )}
                       {price !== null && (
-                        <span className="text-lg text-gray-400 dark:text-gray-600 font-normal">
+                        <span className="text-lg text-gray-600 dark:text-gray-400 font-normal">
                           /{isYearly ? "year" : "month"}
                         </span>
                       )}
                     </div>
                     <ul
-                      className="text-gray-300 dark:text-gray-700 mb-6 list-none space-y-2 text-left"
+                      className="text-gray-700 dark:text-gray-300 mb-6 list-none space-y-2 text-left"
                       aria-label={`${plan.name} features`}
                     >
                       {plan.features.map((feature, i) => (
@@ -557,21 +555,19 @@ const LandingPage = () => {
                     </ul>
                   </div>
                   {plan.ctaLink.startsWith("http") ||
-                  plan.ctaLink.startsWith("#") ? (
+                    plan.ctaLink.startsWith("#") ? (
                     <a
                       href={plan.ctaLink}
-                      className={`px-6 py-3 rounded-full font-semibold mt-auto text-white transition-colors duration-300 ${
-                        isSelected ? "bg-blue-600" : plan.ctaClass
-                      }`}
+                      className={`px-6 py-3 rounded-full font-semibold mt-auto text-white transition-colors duration-300 ${isSelected ? "bg-blue-600" : plan.ctaClass
+                        }`}
                     >
                       {plan.ctaText}
                     </a>
                   ) : (
                     <Link
                       to={plan.ctaLink}
-                      className={`px-6 py-3 rounded-full font-semibold mt-auto text-white transition-colors duration-300 ${
-                        isSelected ? "bg-blue-600" : plan.ctaClass
-                      }`}
+                      className={`px-6 py-3 rounded-full font-semibold mt-auto text-white transition-colors duration-300 ${isSelected ? "bg-blue-600" : plan.ctaClass
+                        }`}
                     >
                       {plan.ctaText}
                     </Link>
@@ -594,40 +590,40 @@ const LandingPage = () => {
         viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.6 }}
         id="faq"
-        className="py-20 bg-gray-900 dark:bg-white transition-colors duration-500 scroll-mt-20"
+        className="py-20 bg-white dark:bg-gray-900 transition-colors duration-500 scroll-mt-20"
       >
         <div className="container mx-auto px-6 text-center max-w-5xl">
-          <h2 className="text-4xl font-bold text-white dark:text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-lg text-gray-300 dark:text-gray-700 mb-12 leading-relaxed">
+          <p className="text-lg text-gray-700 dark:text-gray-300 mb-12 leading-relaxed">
             Find answers to the most common questions about our platform.
           </p>
           <div className="space-y-6 text-left">
-            <div className="bg-gray-800 dark:bg-gray-100 p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-white dark:text-gray-900">
+            <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 How do I get started?
               </h3>
-              <p className="text-gray-300 dark:text-gray-700 mt-3 leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 mt-3 leading-relaxed">
                 Simply click on the "Start Your Free Trial" button, register for
                 an account, and you can start uploading your Excel files right
                 away.
               </p>
             </div>
-            <div className="bg-gray-800 dark:bg-gray-100 p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-white dark:text-gray-900">
+            <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 What file formats are supported?
               </h3>
-              <p className="text-gray-300 dark:text-gray-700 mt-3 leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 mt-3 leading-relaxed">
                 We support standard Excel file formats (.xlsx, .xls) and also
                 comma-separated values (.csv) files.
               </p>
             </div>
-            <div className="bg-gray-800 dark:bg-gray-100 p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-white dark:text-gray-900">
+            <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Is my data secure?
               </h3>
-              <p className="text-gray-300 dark:text-gray-700 mt-3 leading-relaxed">
+              <p className="text-gray-700 dark:text-gray-300 mt-3 leading-relaxed">
                 Yes, we use industry-standard encryption and security protocols
                 to ensure your data is always safe and confidential.
               </p>

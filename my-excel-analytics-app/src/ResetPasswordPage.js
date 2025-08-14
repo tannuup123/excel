@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaEyeSlash, FaEye } from "react-icons/fa";
+import { FaEyeSlash, FaEye, FaCheckCircle } from "react-icons/fa";
+
+// Helper component for the requirements checklist
+const RequirementItem = ({ met, text }) => (
+  <div className={`flex items-center transition-colors duration-300 text-sm ${met ? 'text-green-400' : 'text-red-400'}`}>
+    <FaCheckCircle className="mr-2 flex-shrink-0" />
+    <span>{text}</span>
+  </div>
+);
 
 const ResetPasswordPage = () => {
     const [password, setPassword] = useState('');
@@ -12,8 +20,50 @@ const ResetPasswordPage = () => {
     const { token } = useParams();
     const navigate = useNavigate();
 
+    // State for password strength and requirements
+    const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: 'Weak', color: 'bg-red-500' });
+    const [requirements, setRequirements] = useState({
+        length: false,
+        lowercase: false,
+        uppercase: false,
+        number: false,
+        special: false,
+    });
+
+    const checkPasswordStrength = (pass) => {
+        let score = 0;
+        const newReqs = {
+            length: pass.length >= 8,
+            lowercase: /[a-z]/.test(pass),
+            uppercase: /[A-Z]/.test(pass),
+            number: /[0-9]/.test(pass),
+            special: /[\W_]/.test(pass),
+        };
+        setRequirements(newReqs);
+
+        Object.values(newReqs).forEach(met => { if (met) score++; });
+
+        let text = 'Very Weak', color = 'bg-red-500';
+        if (score === 2) { text = 'Weak'; color = 'bg-orange-500'; }
+        if (score === 3) { text = 'Fair'; color = 'bg-yellow-500'; }
+        if (score === 4) { text = 'Good'; color = 'bg-blue-500'; }
+        if (score === 5) { text = 'Strong'; color = 'bg-green-500'; }
+        setPasswordStrength({ score, text, color });
+    };
+
+    const handlePasswordChange = (e) => {
+        setPassword(e.target.value);
+        checkPasswordStrength(e.target.value);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setMessage('');
+        setError('');
+
+        if (!Object.values(requirements).every(Boolean)) {
+            return setError("Your new password does not meet all the requirements.");
+        }
         if (password !== confirmPassword) {
             return setError('Passwords do not match.');
         }
@@ -41,16 +91,16 @@ const ResetPasswordPage = () => {
     return (
         <div className="relative flex items-center justify-center min-h-screen px-4">
             <div
-                className="absolute inset-0 bg-cover bg-center z-0"
+                className="absolute inset-0 bg-cover bg-center bg-fixed z-0"
                 style={{ backgroundImage: `url(${imageUrl})` }}
             >
                 <div className="absolute inset-0 bg-black opacity-40"></div>
             </div>
 
-            <div className="relative z-10 w-full max-w-md p-8 bg-white/20 dark:bg-gray-800/20 rounded-xl shadow-lg border border-white/30 dark:border-gray-700/30 backdrop-blur-lg transition-colors duration-300">
+            <div className="relative z-10 w-full max-w-md p-8 bg-white/20 dark:bg-gray-800/20 rounded-xl shadow-lg border border-white/30 dark:border-gray-700/30 backdrop-blur-lg">
                 <div className="text-center mb-6">
-                    <h2 className="text-3xl font-bold text-white dark:text-gray-100 mt-4 mb-2">Reset Password</h2>
-                    <p className="text-gray-200 dark:text-gray-300">Enter your new password below to regain access.</p>
+                    <h2 className="text-3xl font-bold text-white mt-4 mb-2">Reset Password</h2>
+                    <p className="text-gray-200">Enter your new password below to regain access.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -59,9 +109,9 @@ const ResetPasswordPage = () => {
                             type={showNewPassword ? "text" : "password"}
                             placeholder="New Password"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={handlePasswordChange}
                             required
-                            className="w-full p-3 pr-10 border border-white/20 dark:border-gray-700/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/50 dark:bg-gray-700/50 text-gray-800 dark:text-white transition-colors duration-300 placeholder-gray-600 dark:placeholder-gray-400"
+                            className="w-full p-3 pr-10 border border-white/20 dark:border-gray-700/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/50 dark:bg-gray-700/50 text-gray-800 dark:text-white transition-colors placeholder-gray-600 dark:placeholder-gray-400"
                         />
                         <button
                             type="button"
@@ -71,6 +121,22 @@ const ResetPasswordPage = () => {
                             {showNewPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
                         </button>
                     </div>
+                    
+                    {/* Password Strength Indicator */}
+                    {password && (
+                        <div className="space-y-2">
+                            <div className="flex w-full h-2 bg-gray-600/50 rounded-full overflow-hidden">
+                                <div className={`transition-all duration-500 ${passwordStrength.color}`} style={{ width: `${passwordStrength.score * 20}%` }}></div>
+                            </div>
+                            <div className="text-left text-xs mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-gray-200">
+                                <RequirementItem met={requirements.length} text="At least 8 characters" />
+                                <RequirementItem met={requirements.uppercase} text="One uppercase letter" />
+                                <RequirementItem met={requirements.lowercase} text="One lowercase letter" />
+                                <RequirementItem met={requirements.number} text="One number" />
+                                <RequirementItem met={requirements.special} text="One special character" />
+                            </div>
+                        </div>
+                    )}
 
                     <div className="relative">
                         <input
@@ -79,7 +145,7 @@ const ResetPasswordPage = () => {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
-                            className="w-full p-3 pr-10 border border-white/20 dark:border-gray-700/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/50 dark:bg-gray-700/50 text-gray-800 dark:text-white transition-colors duration-300 placeholder-gray-600 dark:placeholder-gray-400"
+                            className="w-full p-3 pr-10 border border-white/20 dark:border-gray-700/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white/50 dark:bg-gray-700/50 text-gray-800 dark:text-white transition-colors placeholder-gray-600 dark:placeholder-gray-400"
                         />
                         <button
                             type="button"
@@ -99,12 +165,12 @@ const ResetPasswordPage = () => {
                 </form>
 
                 {message && (
-                    <div className="mt-6 p-4 bg-green-500/20 dark:bg-green-800/30 text-green-700 dark:text-green-300 rounded-lg text-center font-medium backdrop-blur-sm">
+                    <div className="mt-6 p-4 bg-green-500/20 text-green-300 rounded-lg text-center font-medium backdrop-blur-sm">
                         {message}
                     </div>
                 )}
                 {error && (
-                    <div className="mt-6 p-4 bg-red-500/20 dark:bg-red-800/30 text-red-700 dark:text-red-300 rounded-lg text-center font-medium backdrop-blur-sm">
+                    <div className="mt-6 p-4 bg-red-500/20 text-red-300 rounded-lg text-center font-medium backdrop-blur-sm">
                         {error}
                     </div>
                 )}

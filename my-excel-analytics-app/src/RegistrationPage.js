@@ -1,9 +1,71 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSun, FaMoon } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaSun, FaMoon, FaEyeSlash, FaEye, FaTimes, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+import { DarkModeContext } from './contexts/DarkModeContext';
+
+// Helper component for the requirements checklist
+const RequirementItem = ({ met, text }) => (
+  <div className={`flex items-center transition-colors duration-300 text-sm ${met ? 'text-green-400' : 'text-red-400'}`}>
+    <FaCheckCircle className="mr-2 flex-shrink-0" />
+    <span>{text}</span>
+  </div>
+);
+
+// Custom Glassmorphism Alert Component
+const CustomAlert = ({ message, onClose, isSuccess }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4 font-sans">
+      <div className={`bg-white bg-opacity-20 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl max-w-sm w-full text-center p-6 transition-all duration-300 transform scale-105 ${isSuccess ? 'text-green-400' : 'text-red-400'}`}>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-2">
+            {isSuccess ? <FaCheckCircle size={20} /> : <FaExclamationTriangle size={20} />}
+            <p className="text-xl font-bold">{isSuccess ? "Success" : "Error"}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-red-500">
+            <FaTimes />
+          </button>
+        </div>
+        <p className="text-white text-lg mb-6">{message}</p>
+        <button
+          onClick={onClose}
+          className="w-full bg-red-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-red-500/50"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Custom Confirmation Modal Component
+const ConfirmationModal = ({ isOpen, onCancel, onConfirm, message }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4 font-sans">
+      <div className="bg-white bg-opacity-20 backdrop-blur-md border border-white/30 rounded-2xl shadow-2xl max-w-sm w-full text-center p-6 transition-all duration-300 transform scale-105">
+        <p className="text-white text-lg mb-6">{message}</p>
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={onCancel}
+            className="flex-1 bg-gray-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-gray-700 transition-colors duration-300 border border-gray-500/50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 bg-red-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-red-500/50"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const RegistrationPage = () => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
   const [formData, setFormData] = useState({
     fullname: "",
     email: "",
@@ -12,283 +74,244 @@ const RegistrationPage = () => {
     role: "user",
     phoneNumber: "",
     employeeId: "",
-    governmentId: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [isAlertSuccess, setIsAlertSuccess] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const navigate = useNavigate();
 
+  // State and ref for custom dropdown
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, text: 'Weak', color: 'bg-red-500' });
+  const [requirements, setRequirements] = useState({
+      length: false,
+      lowercase: false,
+      uppercase: false,
+      number: false,
+      special: false,
+  });
+  
+  // Close dropdown when clicking outside
   useEffect(() => {
-    if (isDarkMode) {
-      document.body.classList.add("dark-mode");
-      document.body.classList.remove("light-mode");
-    } else {
-      document.body.classList.add("light-mode");
-      document.body.classList.remove("dark-mode");
-    }
-  }, [isDarkMode]);
+    const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            setIsDropdownOpen(false);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
+
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfirmPassword);
+
+  const checkPasswordStrength = (password) => {
+    let score = 0;
+    const newRequirements = {
+        length: password.length >= 8,
+        lowercase: /[a-z]/.test(password),
+        uppercase: /[A-Z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[\W_]/.test(password),
+    };
+    setRequirements(newRequirements);
+    Object.values(newRequirements).forEach(met => { if (met) score++; });
+    let text = 'Very Weak', color = 'bg-red-500';
+    if (score === 2) { text = 'Weak'; color = 'bg-orange-500'; }
+    if (score === 3) { text = 'Fair'; color = 'bg-yellow-500'; }
+    if (score === 4) { text = 'Good'; color = 'bg-blue-500'; }
+    if (score === 5) { text = 'Strong'; color = 'bg-green-500'; }
+    setPasswordStrength({ score, text, color });
+  };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (name === "password") {
+      checkPasswordStrength(value);
+    }
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+  const handleShowAlert = (message, isSuccess = false) => {
+    setAlertMessage(message);
+    setIsAlertSuccess(isSuccess);
+    setShowAlert(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+    setAlertMessage('');
+  };
 
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
+  const handleRegistration = async () => {
+    setShowConfirmation(false);
+    const { fullname, email, password, role, phoneNumber, employeeId } = formData;
+    const registrationData = { fullname, email, password, role };
+    if (role === "admin") {
+      registrationData.phoneNumber = phoneNumber;
+      registrationData.employeeId = employeeId;
     }
-
-    const registrationData = {
-      fullname: formData.fullname,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role, // sends 'user' or 'admin' directly
-    };
-
-    if (formData.role === "admin") {
-      registrationData.phoneNumber = formData.phoneNumber;
-      registrationData.employeeId = formData.employeeId;
-      // Add governmentId if backend expects it
-    }
-
     try {
       const response = await fetch("http://localhost:5000/api/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(registrationData),
       });
-
       const data = await response.json();
-
       if (response.ok) {
-        alert("Registration successful!");
-        navigate("/login");
+        handleShowAlert("Registration successful!", true);
+        setTimeout(() => navigate("/login"), 2000);
       } else {
-        alert(data.error || "Registration failed");
+        handleShowAlert(data.error || "Registration failed");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred. Please try again.");
+      handleShowAlert("An error occurred. Please try again.");
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    if (formData.password !== formData.confirmPassword) {
+      handleShowAlert("Passwords do not match!");
+      return;
+    }
+    if (!Object.values(requirements).every(Boolean)) {
+      handleShowAlert("Password does not meet all requirements.");
+      return;
+    }
+    setShowConfirmation(true);
+  };
+
+  const imageUrl = "https://wallpaperbat.com/img/7899234-excel-wallpaper-for-free-download.png";
+  
+  const dropdownVariants = {
+    hidden: { opacity: 0, y: -10, scale: 0.95 },
+    visible: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: -10, scale: 0.95 }
+  };
+  const roles = [ { value: 'user', label: 'User' }, { value: 'admin', label: 'Admin' } ];
+
   return (
-    <div
-      className={`relative flex items-center justify-center h-screen transition-colors duration-300 ${
-        isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
-      }`}
-      style={{
-        backgroundImage: !isDarkMode ? "url('/images/bg-login.jpg')" : "none",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <button
-        onClick={toggleDarkMode}
-        className={`absolute top-4 right-4 p-3 rounded-full shadow-lg transition-colors duration-300 ${
-          isDarkMode
-            ? "bg-gray-700 text-white hover:bg-gray-600"
-            : "bg-white text-gray-800 hover:bg-gray-200"
-        }`}
-      >
-        {isDarkMode ? (
-          <FaSun className="h-6 w-6" />
-        ) : (
-          <FaMoon className="h-6 w-6" />
-        )}
+    <div className={`relative flex items-center justify-center min-h-screen transition-colors duration-300 ${ isDarkMode ? "text-white" : "text-gray-800" }`}>
+      {showAlert && <CustomAlert message={alertMessage} onClose={handleCloseAlert} isSuccess={isAlertSuccess} />}
+      <ConfirmationModal isOpen={showConfirmation} onCancel={() => setShowConfirmation(false)} onConfirm={handleRegistration} message="Are you sure you want to register?" />
+
+      <div className="absolute inset-0 bg-fixed bg-cover bg-center z-0" style={{ backgroundImage: `url(${imageUrl})` }}>
+        <div className="absolute inset-0 bg-black opacity-40"></div>
+      </div>
+
+      <button onClick={toggleDarkMode} className={`absolute top-4 right-4 p-3 rounded-full shadow-lg transition-colors duration-300 z-50 ${ isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-white text-gray-800 hover:bg-gray-200" }`}>
+        {isDarkMode ? <FaSun className="h-6 w-6" /> : <FaMoon className="h-6 w-6" />}
       </button>
 
-      <div className="glass-container p-10 rounded-2xl shadow-2xl max-w-lg w-full text-center border border-white border-opacity-20 backdrop-filter backdrop-blur-lg">
+      <div className="relative z-10 w-full max-w-lg p-10 rounded-2xl shadow-2xl text-center border border-white/20 backdrop-filter backdrop-blur-lg bg-white/20 dark:bg-gray-800/20">
         <div className="p-8 rounded-xl">
-          <h2
-            className={`text-3xl font-bold mb-6 transition-colors duration-300 ${
-              isDarkMode ? "text-white" : "text-gray-900"
-            }`}
-          >
-            Create an Account
-          </h2>
-          <p
-            className={`mb-8 transition-colors duration-300 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Please fill out the form to register.
-          </p>
+          <h2 className={`text-3xl font-bold mb-6 transition-colors duration-300 ${ isDarkMode ? "text-white" : "text-gray-900" }`}>Create an Account</h2>
+          <p className={`mb-8 transition-colors duration-300 ${ isDarkMode ? "text-gray-300" : "text-gray-700" }`}>Please fill out the form to register.</p>
 
           <form onSubmit={handleSubmit}>
-            <div className="mb-6 flex justify-center items-center space-x-6">
-              <p
-                className={`transition-colors duration-300 ${
-                  isDarkMode ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                Register as:
-              </p>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="role"
-                  value="user"
-                  checked={formData.role === "user"}
-                  onChange={handleChange}
-                  className="form-radio text-blue-500 h-4 w-4"
-                />
-                <span
-                  className={`transition-colors duration-300 ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  User
-                </span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="role"
-                  value="admin"
-                  checked={formData.role === "admin"}
-                  onChange={handleChange}
-                  className="form-radio text-blue-500 h-4 w-4"
-                />
-                <span
-                  className={`transition-colors duration-300 ${
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  }`}
-                >
-                  Admin
-                </span>
-              </label>
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            
+            {/* Custom Animated Dropdown */}
+            <div className="mb-4 relative" ref={dropdownRef}>
+              <button type="button" onClick={() => setIsDropdownOpen(!isDropdownOpen)} aria-haspopup="listbox" aria-expanded={isDropdownOpen} className={`w-full flex justify-between items-center text-left pl-5 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${ isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white" : "bg-white/50 border-gray-300/50 text-gray-800" }`}>
+                <span>Register as: {formData.role.charAt(0).toUpperCase() + formData.role.slice(1)}</span>
+                <div className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}>
+                  <svg className={`fill-current h-5 w-5 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+              </button>
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div variants={dropdownVariants} initial="hidden" animate="visible" exit="exit" transition={{ duration: 0.2, ease: "easeInOut" }} role="listbox" className={`absolute top-full mt-2 w-full rounded-xl border shadow-lg z-20 backdrop-filter backdrop-blur-lg overflow-hidden ${ isDarkMode ? "bg-gray-800/70 border-gray-700/50" : "bg-white/70 border-gray-300/50" }`}>
+                    {roles.map((role) => (
+                      <div key={role.value} role="option" aria-selected={formData.role === role.value} onClick={() => { handleChange({ target: { name: 'role', value: role.value } }); setIsDropdownOpen(false); }} className={`px-5 py-3 cursor-pointer text-left transition-colors duration-200 ${ formData.role === role.value ? (isDarkMode ? 'bg-blue-500/50 text-white' : 'bg-blue-500 text-white') : (isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-200/50') }`}>
+                        {role.label}
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+            {/* End Custom Dropdown */}
 
             <div className="mb-4">
-              <input
-                type="text"
-                name="fullname"
-                value={formData.fullname}
-                onChange={handleChange}
-                placeholder="Full Name"
-                className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
-                  isDarkMode
-                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                    : "bg-white border-gray-300 text-gray-800 placeholder-gray-400"
-                }`}
-              />
+              <input type="text" name="fullname" value={formData.fullname} onChange={handleChange} placeholder="Full Name" required className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${ isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400" : "bg-white/50 border-gray-300/50 text-gray-800 placeholder-gray-500" }`}/>
             </div>
             <div className="mb-4">
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Email Address"
-                className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
-                  isDarkMode
-                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                    : "bg-white border-gray-300 text-gray-800 placeholder-gray-400"
-                }`}
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email Address" required className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${ isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400" : "bg-white/50 border-gray-300/50 text-gray-800 placeholder-gray-500" }`}/>
             </div>
 
-            {/* Additional fields for Admin registration */}
-            {formData.role === "admin" && (
-              <>
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Phone Number"
-                    className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
-                      isDarkMode
-                        ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                        : "bg-white border-gray-300 text-gray-800 placeholder-gray-400"
-                    }`}
-                  />
+            <AnimatePresence>
+              {formData.role === "admin" && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }}>
+                  <div className="mb-4">
+                    <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone Number" required className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${ isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400" : "bg-white/50 border-gray-300/50 text-gray-800 placeholder-gray-500" }`}/>
+                  </div>
+                  <div className="mb-4">
+                    <input type="text" name="employeeId" value={formData.employeeId} onChange={handleChange} placeholder="Employee ID" required className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${ isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400" : "bg-white/50 border-gray-300/50 text-gray-800 placeholder-gray-500" }`}/>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="mb-4 relative">
+              <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="Password" required className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${ isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400" : "bg-white/50 border-gray-300/50 text-gray-800 placeholder-gray-500" }`}/>
+              <button type="button" onClick={togglePasswordVisibility} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            
+            {formData.password && (
+              <div className="mb-4">
+                <div className="flex w-full h-2 bg-gray-600 rounded-full overflow-hidden mt-2">
+                  <div className={`transition-all duration-500 ${passwordStrength.color}`} style={{ width: `${passwordStrength.score * 20}%` }}></div>
                 </div>
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    name="employeeId"
-                    value={formData.employeeId}
-                    onChange={handleChange}
-                    placeholder="Employee ID"
-                    className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
-                      isDarkMode
-                        ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                        : "bg-white border-gray-300 text-gray-800 placeholder-gray-400"
-                    }`}
-                  />
+                <p className={`text-xs mt-1 text-left font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  Strength: {passwordStrength.text}
+                </p>
+                <div className="text-left text-xs mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                  <RequirementItem met={requirements.length} text="At least 8 characters" />
+                  <RequirementItem met={requirements.uppercase} text="One uppercase letter" />
+                  <RequirementItem met={requirements.lowercase} text="One lowercase letter" />
+                  <RequirementItem met={requirements.number} text="One number" />
+                  <RequirementItem met={requirements.special} text="One special character" />
                 </div>
-                {/* <div className="mb-6">
-                                    <input
-                                        type="text"
-                                        name="governmentId"
-                                        value={formData.governmentId}
-                                        onChange={handleChange}
-                                        placeholder="Government ID"
-                                        className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400'}`}
-                                    />
-                                </div> */}
-              </>
+              </div>
             )}
 
-            <div className="mb-4">
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
-                  isDarkMode
-                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                    : "bg-white border-gray-300 text-gray-800 placeholder-gray-400"
-                }`}
-              />
-            </div>
-            <div className="mb-6">
-              <input
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm Password"
-                className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${
-                  isDarkMode
-                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
-                    : "bg-white border-gray-300 text-gray-800 placeholder-gray-400"
-                }`}
-              />
+            <div className="mb-6 relative">
+              <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm Password" required className={`w-full px-5 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${ isDarkMode ? "bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400" : "bg-white/50 border-gray-300/50 text-gray-800 placeholder-gray-500" }`}/>
+              <button type="button" onClick={toggleConfirmPasswordVisibility} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500">
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-green-700 transition-colors duration-300 tracking-wide"
-            >
+            <button type="submit" className="w-full bg-green-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-green-700 transition-colors duration-300 tracking-wide">
               Register
             </button>
           </form>
         </div>
 
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-gray-300 dark:border-gray-500" />
+          <span className="mx-4 text-gray-300 dark:text-gray-500">OR</span>
+          <hr className="flex-grow border-gray-300 dark:border-gray-500" />
+        </div>
+
         <div className="mt-8">
-          <p
-            className={`mb-4 transition-colors duration-300 ${
-              isDarkMode ? "text-gray-300" : "text-gray-700"
-            }`}
-          >
-            Already have an account?
-          </p>
-          <Link
-            to="/login"
-            className="inline-block bg-blue-600 text-white font-bold py-3 px-10 rounded-xl shadow-lg hover:bg-blue-700 transition-colors duration-300 tracking-wide"
-          >
+          <p className={isDarkMode ? "text-gray-300" : "text-gray-800"}>Already have an account?</p>
+          <Link to="/login" className="inline-block bg-blue-600 text-white font-bold py-3 px-10 rounded-xl shadow-lg hover:bg-blue-700 transition-colors duration-300 tracking-wide mt-3">
             LOGIN NOW
           </Link>
         </div>

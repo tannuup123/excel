@@ -1,0 +1,96 @@
+Date : 2025-08-13 21:09:23
+Directory : c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app
+Total : 52 files,  30053 codes, 263 comments, 653 blanks, all 30969 lines
+
+Languages
++----------------+------------+------------+------------+------------+------------+
+| language       | files      | code       | comment    | blank      | total      |
++----------------+------------+------------+------------+------------+------------+
+| JSON           |          8 |     22,960 |          0 |          7 |     22,967 |
+| JavaScript JSX |         39 |      6,983 |        240 |        603 |      7,826 |
+| PostCSS        |          2 |         50 |          0 |          9 |         59 |
+| Markdown       |          1 |         38 |          0 |         33 |         71 |
+| HTML           |          1 |         21 |         23 |          1 |         45 |
+| XML            |          1 |          1 |          0 |          0 |          1 |
++----------------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                                   | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                                      |         52 |     30,053 |        263 |        653 |     30,969 |
+| . (Files)                                                                                                                              |          2 |        635 |          0 |          2 |        637 |
+| backend                                                                                                                                |         12 |      2,705 |         74 |        177 |      2,956 |
+| backend (Files)                                                                                                                        |          3 |      2,078 |         10 |         44 |      2,132 |
+| backend\config                                                                                                                         |          1 |         14 |          0 |          4 |         18 |
+| backend\controllers                                                                                                                    |          2 |        225 |          6 |         45 |        276 |
+| backend\middleware                                                                                                                     |          1 |         20 |          3 |          8 |         31 |
+| backend\models                                                                                                                         |          2 |         34 |          0 |          7 |         41 |
+| backend\routes                                                                                                                         |          3 |        334 |         55 |         69 |        458 |
+| my-excel-analytics-app                                                                                                                 |         38 |     26,713 |        189 |        474 |     27,376 |
+| my-excel-analytics-app (Files)                                                                                                         |          5 |     20,465 |          0 |         37 |     20,502 |
+| my-excel-analytics-app\public                                                                                                          |          3 |         47 |         23 |          2 |         72 |
+| my-excel-analytics-app\src                                                                                                             |         30 |      6,201 |        166 |        435 |      6,802 |
+| my-excel-analytics-app\src (Files)                                                                                                     |         28 |      6,166 |        166 |        427 |      6,759 |
+| my-excel-analytics-app\src\contexts                                                                                                    |          1 |         29 |          0 |          5 |         34 |
+| my-excel-analytics-app\src\utils                                                                                                       |          1 |          6 |          0 |          3 |          9 |
++----------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| filename                                                                                                                               | language       | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\config\db.js                                   | JavaScript JSX |         14 |          0 |          4 |         18 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\controllers\authController.js                  | JavaScript JSX |        160 |          5 |         33 |        198 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\controllers\fileController.js                  | JavaScript JSX |         65 |          1 |         12 |         78 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\middleware\verifyToken.js                      | JavaScript JSX |         20 |          3 |          8 |         31 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\models\File.js                                 | JavaScript JSX |         17 |          0 |          4 |         21 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\models\user.js                                 | JavaScript JSX |         17 |          0 |          3 |         20 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\package-lock.json                              | JSON           |      1,865 |          0 |          1 |      1,866 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\package.json                                   | JSON           |         31 |          0 |          1 |         32 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\routes\authroutes.js                           | JavaScript JSX |         11 |          2 |          3 |         16 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\routes\fileRoutes.js                           | JavaScript JSX |        107 |          9 |         21 |        137 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\routes\userRoutes.js                           | JavaScript JSX |        216 |         44 |         45 |        305 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\backend\server.js                                      | JavaScript JSX |        182 |         10 |         42 |        234 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\README.md                       | Markdown       |         38 |          0 |         33 |         71 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\package-lock.json               | JSON           |     20,345 |          0 |          1 |     20,346 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\package.json                    | JSON           |         58 |          0 |          1 |         59 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\postcss.config.js               | JavaScript JSX |          6 |          0 |          1 |          7 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\public\index.html               | HTML           |         21 |         23 |          1 |         45 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\public\manifest.json            | JSON           |         25 |          0 |          1 |         26 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\public\site.webmanifest         | JSON           |          1 |          0 |          0 |          1 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\AboutUsPage.js              | JavaScript JSX |        299 |         11 |         19 |        329 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\AdminDashboard.js           | JavaScript JSX |        212 |         12 |         17 |        241 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\App.css                     | PostCSS        |         33 |          0 |          6 |         39 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\App.js                      | JavaScript JSX |         60 |          1 |          8 |         69 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\App.test.js                 | JavaScript JSX |          7 |          0 |          2 |          9 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\BlogPage.js                 | JavaScript JSX |        209 |          5 |         14 |        228 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\CareersPage.js              | JavaScript JSX |        213 |          4 |         13 |        230 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\ContactUsPage.js            | JavaScript JSX |        285 |          5 |         14 |        304 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\DisclaimerPage.js           | JavaScript JSX |        166 |          2 |         15 |        183 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\FeaturesPage.js             | JavaScript JSX |        274 |         10 |         16 |        300 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\Footer.js                   | JavaScript JSX |        213 |          4 |          5 |        222 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\LandingPage.js              | JavaScript JSX |        609 |         32 |         28 |        669 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\LoginPage.js                | JavaScript JSX |        270 |         10 |         27 |        307 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\LogoutButton.js             | JavaScript JSX |         19 |          0 |          4 |         23 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\PricingPage.js              | JavaScript JSX |        290 |          7 |         15 |        312 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\PrivacyPolicyPage.js        | JavaScript JSX |        201 |          2 |         16 |        219 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\PrivateRoute.js             | JavaScript JSX |          7 |          2 |          3 |         12 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\RegistrationPage.js         | JavaScript JSX |        268 |         12 |         21 |        301 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\ResetPasswordPage.js        | JavaScript JSX |        104 |          0 |         13 |        117 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\SuperAdminDashboard.js      | JavaScript JSX |      1,048 |          7 |         76 |      1,131 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\TermsOfServicePage.js       | JavaScript JSX |        211 |          2 |         19 |        232 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\Testimonials.js             | JavaScript JSX |        292 |          9 |         19 |        320 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\UserDashboard.js            | JavaScript JSX |        827 |         23 |         48 |        898 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\contexts\DarkModeContext.js | JavaScript JSX |         29 |          0 |          5 |         34 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\index.css                   | PostCSS        |         17 |          0 |          3 |         20 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\index.js                    | JavaScript JSX |         18 |          2 |          3 |         23 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\logo.svg                    | XML            |          1 |          0 |          0 |          1 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\reportWebVitals.js          | JavaScript JSX |         12 |          0 |          2 |         14 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\setupTests.js               | JavaScript JSX |          1 |          4 |          1 |          6 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\src\utils\api.js                | JavaScript JSX |          6 |          0 |          3 |          9 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\my-excel-analytics-app\tailwind.config.js              | JavaScript JSX |         18 |          0 |          1 |         19 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\package-lock.json                                      | JSON           |        619 |          0 |          1 |        620 |
+| c:\Users\rajne\OneDrive\Desktop\All Projects\Zidio Projects\excel-analytics-app\package.json                                           | JSON           |         16 |          0 |          1 |         17 |
+| Total                                                                                                                                  |                |     30,053 |        263 |        653 |     30,969 |
++----------------------------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
