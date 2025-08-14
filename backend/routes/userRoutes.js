@@ -154,25 +154,24 @@ router.put("/:id", verifyToken, async (req, res) => {
 });
 // =================================================
 
-/**
- * ✅ Get all users (admin or super-admin only)
- */
+// ✅ Get all users (admin or super-admin only)
 router.get("/", verifyToken, async (req, res) => {
   if (!["admin", "super-admin"].includes(req.user.role)) {
     return res.status(403).json({ error: "Access denied" });
   }
 
   try {
-    // Added createdAt for frontend sorting/filtering
+    // 🚀 Filter out deleted users so they don't reappear in table
     const users = await User.find(
-      {},
-      "fullname email role isApproved createdAt"
-    );
+  { deletedAt: null },
+  "fullname email role isApproved createdAt"
+);
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch users." });
   }
 });
+
 
 /**
  * ✅ Approve user/admin
@@ -260,21 +259,14 @@ router.put("/:id/role", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * ✅ Delete user
- * - super-admin: can delete anyone
- * - admin: can delete only users (not admins or super-admins)
- */
+// ✅ Delete user (soft delete to keep record)
 router.delete("/:id", verifyToken, async (req, res) => {
   const requesterRole = req.user.role;
 
-  // Only admin or super-admin can attempt deletion
   if (!["admin", "super-admin"].includes(requesterRole)) {
-    return res
-      .status(403)
-      .json({
-        error: "Access denied. Only admins or super-admins can delete users.",
-      });
+    return res.status(403).json({
+      error: "Access denied. Only admins or super-admins can delete users.",
+    });
   }
 
   try {
@@ -283,22 +275,23 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
-    // If requester is admin, ensure they cannot delete admins or super-admins
     if (
       requesterRole === "admin" &&
       ["admin", "super-admin"].includes(targetUser.role)
     ) {
-      return res
-        .status(403)
-        .json({ error: "Admins can only delete regular users." });
+      return res.status(403).json({ error: "Admins can only delete regular users." });
     }
 
-    await User.findByIdAndDelete(req.params.id);
-    res.status(200).json({ message: "User deleted successfully." });
+    // 🆕 Soft delete: set deletedAt without removing from DB
+    targetUser.deletedAt = new Date();
+    await targetUser.save();
+
+    res.status(200).json({ message: "User deleted successfully (soft delete)." });
   } catch (error) {
     console.error("Delete error:", error);
     res.status(500).json({ error: "Failed to delete user." });
   }
 });
+
 
 module.exports = router;

@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
   employeeId: { type: String },
   isApproved: { type: Boolean, default: false },
   passwordResetToken: String, 
-  passwordResetExpires: Date, 
+  passwordResetExpires: Date,
+  deletedAt: { type: Date, default: null } // 🆕 NEW FIELD for soft delete
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

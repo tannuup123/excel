@@ -3,13 +3,14 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require('crypto'); // Built-in Node.js module just added
-const nodemailer = require('nodemailer'); // Install with: npm install nodemailer just added
+const crypto = require('crypto'); 
+const nodemailer = require('nodemailer');
 require("dotenv").config();
 
 const verifyToken = require("./middleware/verifyToken");
 const userRoutes = require("./routes/userRoutes");
 const fileRoutes = require("./routes/fileRoutes");
+const adminRoutes = require("./routes/adminRoutes"); // 🆕 Added
 const User = require("./models/user");
 
 const app = express();
@@ -19,7 +20,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection (Atlas)
+// MongoDB Connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -28,14 +29,15 @@ mongoose
   .then(() => console.log("✅ MongoDB Atlas connected successfully"))
   .catch((err) => {
     console.error("❌ MongoDB Atlas connection error:", err);
-    process.exit(1); // Stop server if DB connection fails
+    process.exit(1);
   });
 
-// =================== REGISTER ===================
+/**
+ * =================== REGISTER ===================
+ */
 app.post("/api/register", async (req, res) => {
   try {
-    const { fullname, email, password, role, phoneNumber, employeeId } =
-      req.body;
+    const { fullname, email, password, role, phoneNumber, employeeId } = req.body;
 
     const validRoles = ["user", "admin", "super-admin"];
     if (!validRoles.includes(role)) {
@@ -43,11 +45,9 @@ app.post("/api/register", async (req, res) => {
     }
 
     if (role === "admin" && (!phoneNumber || !employeeId)) {
-      return res
-        .status(400)
-        .json({
-          error: "Admin registration requires phone number and employee ID.",
-        });
+      return res.status(400).json({
+        error: "Admin registration requires phone number and employee ID.",
+      });
     }
 
     const existingUser = await User.findOne({ email });
@@ -56,6 +56,10 @@ app.post("/api/register", async (req, res) => {
         .status(400)
         .json({ error: `The email '${email}' is already in use.` });
     }
+
+    const adminRoutes = require('./routes/adminRoutes');
+app.use('/api/admin', verifyToken, adminRoutes);
+
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -79,12 +83,10 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-// =================== LOGIN ===================
+/**
+ * =================== LOGIN ===================
+ */
 app.post("/api/login", async (req, res) => {
-
-  // console.log("Login request body:", req.body);  // <--- Add this line
-
-
   try {
     const { email, password, role } = req.body;
     const user = await User.findOne({ email });
@@ -127,61 +129,72 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// =================== FORGOT PASSWORD ===================
+/**
+ * =================== FORGOT PASSWORD ===================
+ */
 app.post("/api/forgot-password", async (req, res) => {
   const { email } = req.body;
-  let user; 
+  let user;
   try {
     user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ error: 'User with that email does not exist.' });
+      return res
+        .status(404)
+        .json({ error: "User with that email does not exist." });
     }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.passwordResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
     user.passwordResetExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
     const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
     const transporter = nodemailer.createTransport({
-      service: 'Gmail',
+      service: "Gmail",
       auth: {
         user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD
-      }
+        pass: process.env.EMAIL_PASSWORD,
+      },
     });
 
     const mailOptions = {
       to: user.email,
       from: process.env.EMAIL_USERNAME,
-      subject: 'Password Reset',
+      subject: "Password Reset",
       html: `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.</p>
              <p>Please click on the following link, or paste this into your browser to complete the process within one hour:</p>
-             <a href="${resetURL}">Reset Password</a>`
+             <a href="${resetURL}">Reset Password</a>`,
     };
 
     await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: 'Password reset email sent.' });
-
+    res.status(200).json({ message: "Password reset email sent." });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'There was an error sending the email.' });
+    res.status(500).json({ error: "There was an error sending the email." });
   }
 });
 
-// =================== RESET PASSWORD ===================
+/**
+ * =================== RESET PASSWORD ===================
+ */
 app.post("/api/reset-password/:token", async (req, res) => {
-  const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
 
   try {
     const user = await User.findOne({
       passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: Date.now() }
+      passwordResetExpires: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ error: 'Token is invalid or has expired.' });
+      return res.status(400).json({ error: "Token is invalid or has expired." });
     }
 
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -190,18 +203,22 @@ app.post("/api/reset-password/:token", async (req, res) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
-    res.status(200).json({ message: 'Password has been reset successfully.' });
-
+    res.status(200).json({ message: "Password has been reset successfully." });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to reset password.' });
+    res.status(500).json({ error: "Failed to reset password." });
   }
 });
 
-// =================== PROTECTED ROUTES ===================
+/**
+ * =================== PROTECTED ROUTES ===================
+ */
 app.use("/api/users", verifyToken, userRoutes);
 app.use("/api/files", verifyToken, fileRoutes);
+app.use("/api/admin", verifyToken, adminRoutes); // 🆕 Added Admin Routes
 
-// =================== ONE-TIME SUPER ADMIN CREATION ===================
+/**
+ * =================== ONE-TIME SUPER ADMIN CREATION ===================
+ */
 app.post("/api/create-super-admin", async (req, res) => {
   try {
     const { fullname, email, password } = req.body;
@@ -229,5 +246,7 @@ app.post("/api/create-super-admin", async (req, res) => {
   }
 });
 
-// =================== START SERVER ===================
+/**
+ * =================== START SERVER ===================
+ */
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
