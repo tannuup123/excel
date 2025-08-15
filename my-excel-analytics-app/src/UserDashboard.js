@@ -77,14 +77,7 @@ const UserDashboard = () => {
   // Use the global context
   const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
 
-  // const toggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
-  // ----- Dark mode effect -----
-  // useEffect(() => {
-  //   document.documentElement.classList.toggle("dark", isDarkMode);
-  // }, [isDarkMode]);
-
-  // ----- Fetch user + files -----
   useEffect(() => {
     const fetchUserDataAndFiles = async () => {
       const token = localStorage.getItem("token");
@@ -333,565 +326,539 @@ const UserDashboard = () => {
     }
   };
 
-  const renderChart = () => {
-    if (loading)
-      return (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-gray-400 animate-pulse">Loading...</p>
-        </div>
-      );
-    if (error)
-      return (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-red-500">{error}</p>
-        </div>
-      );
-    if (!chartData)
-      return (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-gray-400">
-            Upload data and generate a chart to see it here.
-          </p>
-        </div>
-      );
+const renderChart = () => {
+  // Define theme colors using CSS variables for easy dark/light support
+  const containerStyle = { background: 'var(--color-bg)' };
+  const subtleText = { color: 'var(--color-subtle)' };
+  const errorText = { color: 'var(--color-error)' };
 
-    const options = {
-      responsive: true,
-      plugins: {
-        legend: { position: "top" },
-        title: {
-          display: true,
-          text: `Chart of ${yAxis.join(", ")} vs ${xAxis}`,
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-full" style={containerStyle}>
+        <p className="animate-pulse" style={subtleText}>Loading...</p>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex items-center justify-center h-full" style={containerStyle}>
+        <p style={errorText}>{error}</p>
+      </div>
+    );
+  if (!chartData)
+    return (
+      <div className="flex items-center justify-center h-full" style={containerStyle}>
+        <p style={subtleText}>
+          Upload data and generate a chart to see it here.
+        </p>
+      </div>
+    );
+
+  // Chart.js options with green/white theme
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+        labels: {
+          color: "var(--color-fg)", // legend text color
         },
       },
-      maintainAspectRatio: false,
-    };
+      title: {
+        display: true,
+        text: `Chart of ${yAxis.join(", ")} vs ${xAxis}`,
+        color: "var(--color-fg)", // title color
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: "var(--color-fg)" },
+        grid: { color: "var(--color-subtle)" }
+      },
+      y: {
+        ticks: { color: "var(--color-fg)" },
+        grid: { color: "var(--color-subtle)" }
+      },
+    },
+    maintainAspectRatio: false,
+    backgroundColor: "var(--color-bg)", // applies for Chart.js 4.x+
+  };
 
-    if (chartType === "3d") {
+  if (chartType === "3d") {
+    return (
+      <Plotly
+        data={chartData}
+        layout={{
+          margin: { l: 0, r: 0, b: 0, t: 40 },
+          paper_bgcolor: "var(--color-bg)",
+          plot_bgcolor: "var(--color-bg)",
+          font: { color: "var(--color-fg)" },
+          title: {
+            text: `3D Chart of ${yAxis[0] || ""} vs ${xAxis || ""} vs ${yAxis || ""}`,
+            font: { color: "var(--color-fg)" },
+          },
+        }}
+        style={{ width: "100%", height: "100%" }}
+      />
+    );
+  }
+
+  switch (chartType) {
+    case "line":
+      return <Line data={chartData} options={options} id="chart-canvas" />;
+    case "bar":
+      return <Bar data={chartData} options={options} id="chart-canvas" />;
+    case "pie":
       return (
-        <Plotly
+        <Pie
           data={chartData}
-          layout={{
-            margin: { l: 0, r: 0, b: 0, t: 40 },
-            title: `3D Chart of ${yAxis[0] || ""} vs ${xAxis || ""} vs ${
-              yAxis[1] || ""
-            }`,
+          options={{
+            ...options,
+            plugins: {
+              ...options.plugins,
+              title: {
+                ...options.plugins.title,
+                text: `Chart of ${yAxis[0]} vs ${xAxis}`,
+              },
+            },
           }}
-          style={{ width: "100%", height: "100%" }}
+          id="chart-canvas"
         />
       );
-    }
+    default:
+      return <p>Select a chart type.</p>;
+  }
+};
 
-    switch (chartType) {
-      case "line":
-        return <Line data={chartData} options={options} id="chart-canvas" />;
-      case "bar":
-        return <Bar data={chartData} options={options} id="chart-canvas" />;
-      case "pie":
-        return (
-          <Pie
-            data={chartData}
-            options={{
-              ...options,
-              plugins: {
-                ...options.plugins,
-                title: {
-                  ...options.plugins.title,
-                  text: `Chart of ${yAxis[0]} vs ${xAxis}`,
-                },
-              },
-            }}
-            id="chart-canvas"
-          />
-        );
-      default:
-        return <p>Select a chart type.</p>;
-    }
-  };
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case "analytics":
-        return (
-          <>
-            {/* Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-                <h2 className="text-gray-500 dark:text-gray-300 font-medium">
-                  Total Projects
-                </h2>
-                <p className="text-4xl font-bold mt-2 text-indigo-600 dark:text-indigo-400">
-                  {dashboardStats.totalProjects}
-                </p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-                <h2 className="text-gray-500 dark:text-gray-300 font-medium">
-                  Recent Views
-                </h2>
-                <p className="text-4xl font-bold mt-2 text-indigo-600 dark:text-indigo-400">
-                  {dashboardStats.recentViews}
-                </p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
-                <h2 className="text-gray-500 dark:text-gray-300 font-medium">
-                  Last Active
-                </h2>
-                <p className="text-xl font-bold mt-2 text-indigo-600 dark:text-indigo-400">
-                  {dashboardStats.lastActive}
-                </p>
-              </div>
+const renderContent = () => {
+  switch (activeTab) {
+    case "analytics":
+      return (
+        <>
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+              <h2 className="text-gray-500 dark:text-gray-300 font-medium">Total Projects</h2>
+              <p className="text-4xl font-bold mt-2 text-green-600 dark:text-green-400">
+                {dashboardStats.totalProjects}
+              </p>
             </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+              <h2 className="text-gray-500 dark:text-gray-300 font-medium">Recent Views</h2>
+              <p className="text-4xl font-bold mt-2 text-green-600 dark:text-green-400">
+                {dashboardStats.recentViews}
+              </p>
+            </div>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700">
+              <h2 className="text-gray-500 dark:text-gray-300 font-medium">Last Active</h2>
+              <p className="text-xl font-bold mt-2 text-green-600 dark:text-green-400">
+                {dashboardStats.lastActive}
+              </p>
+            </div>
+          </div>
 
-            {/* Upload + Config */}
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mb-8">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center space-x-2">
-                <span>New Analysis</span>
-                <div className="relative group">
-                  <FaInfoCircle className="text-gray-400 dark:text-gray-500 hover:text-indigo-500 cursor-pointer transition-colors" />
-                  <span className="absolute left-1/2 -top-10 -translate-x-1/2 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    To generate a chart, first upload an Excel file, then select
-                    your desired X and Y axes, and finally choose a chart type
-                    (for 3D chart you have to choose two Y axes using ctrl+ then
-                    select).
-                  </span>
-                </div>
-              </h2>
-
-              <label className="flex flex-col items-center justify-center space-y-4 p-8 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer">
-                <FaUpload className="text-green-500 text-4xl" />
-                <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
-                  Drag and drop your Excel file here or{" "}
-                  <span className="text-green-500 underline">
-                    click to upload
-                  </span>
+          {/* Upload + Config */}
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mb-8">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center space-x-2">
+              <span>New Analysis</span>
+              <div className="relative group">
+                <FaInfoCircle className="text-green-500 dark:text-green-400 hover:text-green-600 cursor-pointer transition-colors" />
+                <span className="absolute left-1/2 -top-10 -translate-x-1/2 w-64 p-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  To generate a chart, first upload an Excel file, then select your desired X and Y axes, and finally choose a chart type (for 3D chart you have to choose two Y axes using ctrl+ then select).
                 </span>
-                <p className="text-sm text-gray-400 dark:text-gray-500">
-                  Supported formats: .xls, .xlsx
-                </p>
-                <input
-                  type="file"
-                  onChange={handleFileUpload}
-                  accept=".xls,.xlsx"
-                  className="hidden"
-                />
-              </label>
+              </div>
+            </h2>
 
-              {uploadedFileName && (
-                <p className="mt-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
-                  File loaded:{" "}
-                  <span className="font-mono">{uploadedFileName}</span>
-                </p>
-              )}
+            <label className="flex flex-col items-center justify-center space-y-4 p-8 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-green-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer">
+              <FaUpload className="text-green-500 text-4xl" />
+              <span className="text-lg font-medium text-gray-600 dark:text-gray-300">
+                Drag and drop your Excel file here or{" "}
+                <span className="text-green-500 underline">click to upload</span>
+              </span>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Supported formats: .xls, .xlsx</p>
+              <input
+                type="file"
+                onChange={handleFileUpload}
+                accept=".xls,.xlsx"
+                className="hidden"
+              />
+            </label>
 
-              {isFileUploaded && (
-                <>
-                  {/* Axis & Chart Type Selection */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                        X-Axis
-                      </label>
-                      <select
-                        value={xAxis}
-                        onChange={(e) => setXAxis(e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-gray-50 dark:bg-gray-700 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:text-gray-100"
-                      >
-                        <option value="">Select X-Axis</option>
-                        {columnHeaders.map((h) => (
-                          <option key={h} value={h}>
-                            {h}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                        Y-Axis
-                      </label>
-                      <select
-                        multiple
-                        value={yAxis}
-                        onChange={(e) =>
-                          setYAxis(
-                            Array.from(
-                              e.target.selectedOptions,
-                              (option) => option.value
-                            )
-                          )
-                        }
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm h-32 p-2 bg-gray-50 dark:bg-gray-700 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:text-gray-100"
-                      >
-                        {columnHeaders.map((h) => (
-                          <option key={h} value={h}>
-                            {h}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                        Chart Type
-                      </label>
-                      <select
-                        value={chartType}
-                        onChange={(e) => setChartType(e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-gray-50 dark:bg-gray-700 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:text-gray-100"
-                      >
-                        <option value="line">Line Chart (2D)</option>
-                        <option value="bar">Bar Chart (2D)</option>
-                        <option value="pie">Pie Chart (2D)</option>
-                        <option value="3d">3D Chart (X, Y, Z)</option>
-                      </select>
-                    </div>
+            {uploadedFileName && (
+              <p className="mt-4 text-center text-sm text-green-600 dark:text-green-400 font-semibold">
+                File loaded: <span className="font-mono">{uploadedFileName}</span>
+              </p>
+            )}
+
+            {isFileUploaded && (
+              <>
+                {/* Axis & Chart Type Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      X-Axis
+                    </label>
+                    <select
+                      value={xAxis}
+                      onChange={(e) => setXAxis(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-gray-50 dark:bg-gray-700 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:text-gray-100"
+                    >
+                      <option value="">Select X-Axis</option>
+                      {columnHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
-                    <button
-                      onClick={generateChart}
-                      disabled={
-                        !excelData?.length || xAxis === "" || yAxis.length === 0
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      Y-Axis
+                    </label>
+                    <select
+                      multiple
+                      value={yAxis}
+                      onChange={(e) =>
+                        setYAxis(
+                          Array.from(e.target.selectedOptions, (option) => option.value)
+                        )
                       }
-                      className={`flex-1 p-3 rounded-lg text-white font-semibold transition-all flex items-center justify-center space-x-2 ${
-                        !excelData?.length || xAxis === "" || yAxis.length === 0
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-indigo-600 hover:bg-indigo-700"
-                      }`}
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm h-32 p-2 bg-gray-50 dark:bg-gray-700 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:text-gray-100"
                     >
-                      <FaChartLine />
-                      <span>Generate Chart</span>
-                    </button>
-                    <button
-                      onClick={handleGetAiInsight}
-                      className="flex-1 p-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all flex items-center justify-center space-x-2"
+                      {columnHeaders.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      Chart Type
+                    </label>
+                    <select
+                      value={chartType}
+                      onChange={(e) => setChartType(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-gray-50 dark:bg-gray-700 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:text-gray-100"
                     >
-                      <FaRobot />
-                      <span>Get AI Insights</span>
-                    </button>
+                      <option value="line">Line Chart (2D)</option>
+                      <option value="bar">Bar Chart (2D)</option>
+                      <option value="pie">Pie Chart (2D)</option>
+                      <option value="3d">3D Chart (X, Y, Z)</option>
+                    </select>
                   </div>
-                </>
-              )}
-            </div>
-
-            {/* Chart Display */}
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 relative min-h-[400px]">
-              <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
-                Your Data Visualization
-              </h2>
-              <div className="h-96 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center p-4">
-                {renderChart()}
-              </div>
-              {chartData && (
-                <button
-                  onClick={handleDownloadChart}
-                  className="absolute bottom-8 right-8 p-3 bg-gray-800 dark:bg-gray-900 text-white rounded-full hover:bg-gray-900 dark:hover:bg-gray-700 transition-colors shadow-lg"
-                >
-                  <FaDownload />
-                </button>
-              )}
-            </div>
-
-            {/* AI Insights */}
-            {aiInsight && (
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mt-8">
-                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
-                  AI-Powered Insights
-                </h2>
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {aiInsight}
-                </p>
-              </div>
-            )}
-          </>
-        );
-
-      case "reports":
-        return (
-          <>
-            <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">
-              My Reports
-            </h1>
-            {loading ? (
-              <p className="text-center text-gray-500 dark:text-gray-400">
-                Loading reports...
-              </p>
-            ) : error ? (
-              <p className="text-red-500 dark:text-red-400 text-center">
-                {error}
-              </p>
-            ) : fileHistory.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center">
-                You have no reports yet. Upload a file to get started!
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {fileHistory.map((file) => (
-                  <div
-                    key={file._id}
-                    className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:border-indigo-400"
-                  >
-                    <h3 className="text-xl font-semibold text-indigo-600 dark:text-indigo-400">
-                      {file.fileName}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Uploaded: {new Date(file.uploadDate).toLocaleDateString()}
-                    </p>
-                    <div className="mt-4">
-                      <h4 className="text-lg font-medium text-gray-700 dark:text-gray-300 border-b pb-2 mb-2">
-                        Analysis History
-                      </h4>
-                      {file.analyses?.length === 0 ? (
-                        <p className="text-gray-400 dark:text-gray-500 text-sm">
-                          No analysis performed yet.
-                        </p>
-                      ) : (
-                        <ul className="list-disc list-inside space-y-1 text-sm">
-                          {file.analyses?.map((analysis, index) => (
-                            <li
-                              key={index}
-                              className="text-gray-600 dark:text-gray-300"
-                            >
-                              Chart Type:{" "}
-                              <span className="font-mono text-indigo-600 dark:text-indigo-400">
-                                {analysis.chartType}
-                              </span>
-                              , X-Axis:{" "}
-                              <span className="font-mono text-indigo-600 dark:text-indigo-400">
-                                {analysis.xAxis}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                    <button
-                      onClick={() =>
-                        loadFileFromHistory(file.fileId, file.fileName)
-                      }
-                      className="mt-6 w-full py-2 px-4 bg-indigo-500 dark:bg-indigo-600 text-white rounded-lg hover:bg-indigo-600 dark:hover:bg-indigo-500 transition-colors font-medium text-center"
-                    >
-                      View Report
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        );
-
-      case "profile":
-        return (
-          <>
-            <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">
-              User Profile
-            </h1>
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 max-w-lg">
-              <div className="flex items-center space-x-6 mb-6">
-                <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-300 text-3xl font-bold">
-                  {user.fullname ? user.fullname.charAt(0) : "U"}
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                    {user.fullname}
-                  </h2>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {user.role}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                    Email
-                  </h3>
-                  <p className="text-gray-900 dark:text-gray-100 mt-1">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </>
-        );
 
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
-      {/* Sidebar */}
-      <motion.aside
-        onMouseEnter={() => setIsSidebarExpanded(true)}
-        onMouseLeave={() => setIsSidebarExpanded(false)}
-        animate={{ width: isSidebarExpanded ? 280 : 80 }}
-        transition={{ duration: 0.3 }}
-        className="bg-white dark:bg-gray-800 p-4 flex flex-col shadow-xl border-r border-gray-200 dark:border-gray-700 overflow-hidden"
-      >
-        {/* Logo */}
-        <div className="flex items-center justify-center mb-8">
-          <motion.div
-            animate={{
-              rotate: [0, 10, -10, 10, -10, 0], // oscillating rotation
-              scale: [1, 1.1, 1, 1.1, 1], // gentle pulse
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              repeatType: "loop",
-              ease: "easeInOut",
-            }}
-            className="text-green-600 dark:text-green-400 cursor-pointer select-none"
-          >
-            <FaChartPie className="text-4xl" />
-          </motion.div>
-          {isSidebarExpanded && (
-            <span className="text-2xl font-bold text:black dark:text-white truncate ml-2">
-              Sheet <span className=" text-green-500">Insights</span>
-            </span>
-          )}
-        </div>
-
-        {/* Nav */}
-        <nav className="flex flex-col space-y-2 flex-1">
-          <button
-            onClick={() => setActiveTab("analytics")}
-            className={clsx(
-              "flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 w-full",
-              activeTab === "analytics"
-                ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold"
-                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-            )}
-          >
-            <FaChartLine className="text-xl" />
-            {isSidebarExpanded && <span>My Analytics</span>}
-          </button>
-
-          {/* Reports */}
-          <div>
-            <button
-              onClick={() => setIsReportsDropdownOpen(!isReportsDropdownOpen)}
-              className={clsx(
-                "flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 w-full",
-                activeTab === "reports"
-                  ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold"
-                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              )}
-            >
-              <FaTable className="text-xl" />
-              {isSidebarExpanded && <span>My Reports</span>}
-              {isSidebarExpanded && (
-                <FaChevronDown
-                  className={clsx(
-                    "ml-auto transform transition-transform",
-                    isReportsDropdownOpen && "rotate-180"
-                  )}
-                />
-              )}
-            </button>
-
-            {isReportsDropdownOpen && isSidebarExpanded && (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-1 ml-8 rounded-md shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-              >
-                {/* Recent Files */}
-                <div className="py-1">
-                  <div className="px-4 py-1 text-xs text-gray-500 dark:text-gray-400">
-                    Recent Files
-                  </div>
-                  {fileHistory.length > 0 ? (
-                    fileHistory.slice(0, 5).map((file) => (
-                      <button
-                        key={file._id}
-                        onClick={() =>
-                          loadFileFromHistory(file.fileId, file.fileName)
-                        }
-                        className="block w-full text-left px-4 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 truncate"
-                      >
-                        {file.fileName}
-                      </button>
-                    ))
-                  ) : (
-                    <p className="px-4 py-1 text-sm text-gray-400">
-                      No files yet.
-                    </p>
-                  )}
-                  <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
                   <button
-                    onClick={() => setActiveTab("reports")}
-                    className="flex px-4 py-1 text-sm text-indigo-600 dark:text-indigo-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
+                    onClick={generateChart}
+                    disabled={!excelData?.length || xAxis === "" || yAxis.length === 0}
+                    className={`flex-1 p-3 rounded-lg text-white font-semibold transition-all flex items-center justify-center space-x-2 ${
+                      !excelData?.length || xAxis === "" || yAxis.length === 0
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-green-600 hover:bg-green-700"
+                    }`}
                   >
-                    <FaPlusCircle className="mr-2" /> View All Reports
+                    <FaChartLine />
+                    <span>Generate Chart</span>
+                  </button>
+                  <button
+                    onClick={handleGetAiInsight}
+                    className="flex-1 p-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all flex items-center justify-center space-x-2"
+                  >
+                    <FaRobot />
+                    <span>Get AI Insights</span>
                   </button>
                 </div>
-              </motion.div>
+              </>
             )}
           </div>
 
-          {/* Profile */}
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={clsx(
-              "flex items-center space-x-3 p-3 rounded-lg transition-all duration-300 w-full",
-              activeTab === "profile"
-                ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 font-bold"
-                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          {/* Chart Display */}
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 relative min-h-[400px]">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+              Your Data Visualization
+            </h2>
+            <div className="h-96 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-center p-4">
+              {renderChart()}
+            </div>
+            {chartData && (
+              <button
+                onClick={handleDownloadChart}
+                className="absolute bottom-8 right-8 p-3 bg-gray-800 dark:bg-gray-900 text-white rounded-full hover:bg-gray-900 dark:hover:bg-gray-700 transition-colors shadow-lg"
+              >
+                <FaDownload />
+              </button>
             )}
-          >
-            <FaUser className="text-xl" />
-            {isSidebarExpanded && <span>Profile</span>}
-          </button>
-        </nav>
+          </div>
 
-        {/* Logout */}
-        <div className="mt-auto border-t border-gray-200 dark:border-gray-700 pt-4">
-          <button
-            onClick={handleLogout}
-            className={`
-              flex items-center justify-center space-x-3 p-3 rounded-lg w-full
-              text-black dark:text-white hover:text-white bg-transparent
-              transition-all duration-300
-              hover:bg-red-500 
-            `}
-          >
-            <FaSignOutAlt />
-            {isSidebarExpanded && <span>Logout</span>}
-          </button>
-        </div>
-      </motion.aside>
+          {/* AI Insights */}
+          {aiInsight && (
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mt-8">
+              <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+                AI-Powered Insights
+              </h2>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{aiInsight}</p>
+            </div>
+          )}
+        </>
+      );
 
-      {/* Main Content */}
-      <main className="flex-1 p-10 overflow-y-auto bg-gray-50 dark:bg-gray-900 -mt-5">
-        <header className="mb-10 pb-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
-            <span className="inline-block overflow-hidden whitespace-nowrap animate-typing">
-              Welcome,{" "}
-              <span className="text-green-500">{user.fullname || "User"}</span>!
-            </span>
+    case "reports":
+      return (
+        <>
+          <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">
+            My Reports
           </h1>
+          {loading ? (
+            <p className="text-center text-gray-500 dark:text-gray-400">Loading reports...</p>
+          ) : error ? (
+            <p className="text-red-500 dark:text-red-400 text-center">{error}</p>
+          ) : fileHistory.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400 text-center">
+              You have no reports yet. Upload a file to get started!
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {fileHistory.map((file) => (
+                <div
+                  key={file._id}
+                  className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:border-green-500"
+                >
+                  <h3 className="text-xl font-semibold text-green-600 dark:text-green-400">
+                    {file.fileName}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Uploaded: {new Date(file.uploadDate).toLocaleDateString()}
+                  </p>
+                  <div className="mt-4">
+                    <h4 className="text-lg font-medium text-gray-700 dark:text-gray-300 border-b pb-2 mb-2">
+                      Analysis History
+                    </h4>
+                    {file.analyses?.length === 0 ? (
+                      <p className="text-gray-400 dark:text-gray-500 text-sm">
+                        No analysis performed yet.
+                      </p>
+                    ) : (
+                      <ul className="list-disc list-inside space-y-1 text-sm">
+                        {file.analyses?.map((analysis, index) => (
+                          <li key={index} className="text-gray-600 dark:text-gray-300">
+                            Chart Type:{" "}
+                            <span className="font-mono text-green-600 dark:text-green-400">
+                              {analysis.chartType}
+                            </span>
+                            , X-Axis:{" "}
+                            <span className="font-mono text-green-600 dark:text-green-400">
+                              {analysis.xAxis}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => loadFileFromHistory(file.fileId, file.fileName)}
+                    className="mt-6 w-full py-2 px-4 bg-green-600 dark:bg-green-700 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors font-medium text-center"
+                  >
+                    View Report
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      );
 
-          <button
-            onClick={toggleDarkMode}
-            className={`p-3 rounded-full shadow-lg transition-colors duration-300 ${
-              isDarkMode
-                ? "bg-gray-700 text-white hover:bg-gray-600"
-                : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700"
-            }`}
-          >
-            {isDarkMode ? (
-              <FaSun className="h-6 w-6" />
+    case "profile":
+      return (
+        <>
+          <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-gray-100">
+            User Profile
+          </h1>
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 max-w-lg">
+            <div className="flex items-center space-x-6 mb-6">
+              <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center text-green-600 dark:text-green-300 text-3xl font-bold">
+                {user.fullname ? user.fullname.charAt(0) : "U"}
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+                  {user.fullname}
+                </h2>
+                <p className="text-gray-500 dark:text-gray-400">{user.role}</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Email</h3>
+                <p className="text-gray-900 dark:text-gray-100 mt-1">{user.email}</p>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+
+    default:
+      return null;
+  }
+};
+
+
+ return (
+  <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+    {/* {Sidebar} */}
+  <motion.aside
+  animate={{ width: 280 }}
+  transition={{ duration: 0.3 }}
+  className="bg-green-50 dark:bg-green-900 p-6 flex flex-col shadow-xl border-r border-green-200 dark:border-green-800 overflow-hidden transition-all duration-500"
+>
+  {/* Logo Section */}
+  <div className="mb-12 text-center">
+    <motion.div
+      animate={{
+        rotate: [0, 10, -10, 10, -10, 0],
+        scale: [1, 1.05, 1, 1.05, 1],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        repeatType: "loop",
+        ease: "easeInOut",
+      }}
+      className="text-green-600 dark:text-green-300 transition-transform duration-300 hover:scale-110 mx-auto cursor-pointer"
+    >
+      <FaChartPie size={40} />
+    </motion.div>
+    <p className="text-2xl font-bold mt-2 tracking-wide text-green-800 dark:text-green-100">
+      Sheet <span className="text-green-600 dark:text-green-400">Insights</span>
+    </p>
+  </div>
+
+  {/* Navigation */}
+  <nav className="space-y-3">
+    {/* My Analytics */}
+    <button
+      onClick={() => setActiveTab("analytics")}
+      className={`w-full p-3 rounded-md font-medium tracking-wide flex items-center
+        ${activeTab === "analytics"
+          ? "bg-green-500 text-white shadow-lg scale-105"
+          : "bg-green-200 dark:bg-green-800 text-green-900 dark:text-green-200 hover:bg-green-400 hover:text-white"
+        } transition-all duration-300 ease-in-out`}
+    >
+      <FaChartLine className="mr-3" /> My Analytics
+    </button>
+
+    {/* My Reports */}
+    <div>
+      <button
+        onClick={() => setIsReportsDropdownOpen(!isReportsDropdownOpen)}
+        className={`w-full p-3 rounded-md font-medium tracking-wide flex items-center
+          ${activeTab === "reports"
+            ? "bg-green-500 text-white shadow-lg scale-105"
+            : "bg-green-200 dark:bg-green-800 text-green-900 dark:text-green-200 hover:bg-green-400 hover:text-white"
+          } transition-all duration-300 ease-in-out`}
+      >
+        <FaTable className="mr-3" /> My Reports
+        <FaChevronDown
+          className={`ml-auto transition-transform ${isReportsDropdownOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Dropdown */}
+      {isReportsDropdownOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-2 ml-4 rounded-md shadow-lg bg-green-50 dark:bg-green-800 border border-green-200 dark:border-green-700"
+        >
+          <div className="py-2">
+            <div className="px-4 py-1 text-xs text-green-700 dark:text-green-200">
+              Recent Files
+            </div>
+            {fileHistory.length > 0 ? (
+              fileHistory.slice(0, 5).map((file) => (
+                <button
+                  key={file._id}
+                  onClick={() => loadFileFromHistory(file.fileId, file.fileName)}
+                  className="block w-full text-left px-4 py-1 text-sm hover:bg-green-100 dark:hover:bg-green-700 truncate"
+                >
+                  {file.fileName}
+                </button>
+              ))
             ) : (
-              <FaMoon className="h-6 w-6" />
+              <p className="px-4 py-1 text-sm text-green-500 dark:text-green-300">No files yet.</p>
             )}
-          </button>
-        </header>
-
-        {renderContent()}
-      </main>
+            <div className="border-t border-green-200 dark:border-green-700 my-1"></div>
+            <button
+              onClick={() => setActiveTab("reports")}
+              className="flex px-4 py-1 text-sm text-green-700 dark:text-green-200 hover:bg-green-100 dark:hover:bg-green-700 w-full"
+            >
+              <FaPlusCircle className="mr-2" /> View All Reports
+            </button>
+          </div>
+        </motion.div>
+      )}
     </div>
-  );
+
+    {/* Profile */}
+    <button
+      onClick={() => setActiveTab("profile")}
+      className={`w-full p-3 rounded-md font-medium tracking-wide flex items-center
+        ${activeTab === "profile"
+          ? "bg-green-500 text-white shadow-lg scale-105"
+          : "bg-green-200 dark:bg-green-800 text-green-900 dark:text-green-200 hover:bg-green-400 hover:text-white"
+        } transition-all duration-300 ease-in-out`}
+    >
+      <FaUser className="mr-3" /> Profile
+    </button>
+  </nav>
+
+  {/* Logout */}
+  <div className="mt-auto pt-6">
+    <button
+      onClick={handleLogout}
+      className="flex items-center justify-center p-3 bg-red-500 w-full rounded-md 
+        font-medium transition-all text-white duration-300 ease-in-out transform
+        hover:bg-red-600 hover:scale-105 hover:shadow-lg"
+    >
+      <FaSignOutAlt className="mr-2" /> Logout
+    </button>
+  </div>
+</motion.aside>
+
+
+
+    {/* Main Content */}
+    <main className="flex-1 p-10 overflow-y-auto bg-gray-50 dark:bg-gray-900 -mt-5">
+      <header className="mb-10 pb-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
+          <span className="inline-block overflow-hidden whitespace-nowrap animate-typing">
+            Welcome,{" "}
+            <span className="text-green-500">{user.fullname || "User"}</span>!
+          </span>
+        </h1>
+
+        <button
+          onClick={toggleDarkMode}
+          className={`p-3 rounded-full shadow-lg transition-colors duration-300 ${
+            isDarkMode
+              ? "bg-gray-700 text-white hover:bg-gray-600"
+              : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700"
+          }`}
+        >
+          {isDarkMode ? (
+            <FaSun className="h-6 w-6" />
+          ) : (
+            <FaMoon className="h-6 w-6" />
+          )}
+        </button>
+      </header>
+
+      {renderContent()}
+    </main>
+  </div>
+);
+
 };
 
 export default UserDashboard;

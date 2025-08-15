@@ -259,14 +259,14 @@ router.put("/:id/role", verifyToken, async (req, res) => {
   }
 });
 
-// ✅ Delete user (soft delete to keep record)
+// ✅ Delete user - hard delete
+const DeletionLog = require('../models/deletionLog'); // add at top
+
 router.delete("/:id", verifyToken, async (req, res) => {
   const requesterRole = req.user.role;
 
   if (!["admin", "super-admin"].includes(requesterRole)) {
-    return res.status(403).json({
-      error: "Access denied. Only admins or super-admins can delete users.",
-    });
+    return res.status(403).json({ error: "Access denied. Only admins or super-admins can delete users." });
   }
 
   try {
@@ -275,6 +275,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
+    // prevent admins from deleting other admins or super-admins
     if (
       requesterRole === "admin" &&
       ["admin", "super-admin"].includes(targetUser.role)
@@ -282,16 +283,25 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(403).json({ error: "Admins can only delete regular users." });
     }
 
-    // 🆕 Soft delete: set deletedAt without removing from DB
-    targetUser.deletedAt = new Date();
-    await targetUser.save();
+    // ✅ Hard delete user
+    await User.findByIdAndDelete(req.params.id);
 
-    res.status(200).json({ message: "User deleted successfully (soft delete)." });
+    // ✅ Log deletion
+    await DeletionLog.create({
+      userId: targetUser._id,
+      deletedBy: req.user.id,
+      userEmail: targetUser.email,
+      userName: targetUser.fullname
+    });
+
+    res.status(200).json({ message: "User permanently deleted and logged." });
   } catch (error) {
     console.error("Delete error:", error);
     res.status(500).json({ error: "Failed to delete user." });
   }
 });
+
+
 
 
 module.exports = router;

@@ -5,6 +5,7 @@ const User = require('../models/user');
 const File = require('../models/File');
 const ActivityLog = require('../models/activityLog');
 const Session = require('../models/session');
+const DeletionLog = require("../models/DeletionLog"); 
 
 // ===== Dashboard Summary Stats =====
 router.get('/stats', verifyToken, async (req, res) => {
@@ -13,15 +14,25 @@ router.get('/stats', verifyToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const totalUsers = await User.countDocuments({ role: 'user', deletedAt: null });
+    const totalUsers = await User.countDocuments({ role: 'user', deletedAt: null, isDeleted: { $ne: true } });
     const totalFilesUploaded = await File.countDocuments();
 
     const activeSince = new Date();
     activeSince.setDate(activeSince.getDate() - 30);
-    const activeUsers = await File.distinct('user', { uploadDate: { $gte: activeSince } }).then(u => u.length);
+    // Get all user IDs of role 'user' and not deleted
+const userIds = await User.find({ role: 'user', deletedAt: null }).distinct('_id');
 
-    const accountsCreated = await User.countDocuments({ role: 'user' });
-    const accountsDeleted = await User.countDocuments({ deletedAt: { $ne: null, $gte: activeSince } });
+// Count distinct users from files uploaded in last 30 days and filter by role
+const activeUsers = await File.distinct('user', {
+  uploadDate: { $gte: activeSince },
+  user: { $in: userIds }
+}).then(u => u.length);
+
+
+    const accountsCreated = await User.countDocuments({ role: 'user', isDeleted: { $ne: true } });
+    const accountsDeleted = await DeletionLog.countDocuments({
+    deletedAt: { $gte: activeSince }
+  });
 
     res.json({ totalUsers, totalFilesUploaded, activeUsers, accountsCreated, accountsDeleted });
   } catch (err) {

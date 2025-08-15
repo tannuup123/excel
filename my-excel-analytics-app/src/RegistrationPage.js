@@ -321,3 +321,283 @@ const RegistrationPage = () => {
 };
 
 export default RegistrationPage;
+
+// import React, { useState, useRef } from "react";
+// import { Link, useNavigate } from "react-router-dom";
+// import { motion, AnimatePresence } from "framer-motion";
+// import { FaEye, FaEyeSlash, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
+
+// // Colors
+// const THEME_GREEN = "#28c47c";
+// const THEME_WHITE = "#ffffff";
+// const SHADOW = "0 8px 32px 0 rgba(60, 200, 140, 0.19)";
+
+// const RequirementItem = ({ met, text }) => (
+//   <li style={{
+//     display: "flex",
+//     alignItems: "center",
+//     marginBottom: 8,
+//     color: met ? THEME_GREEN : "#ccc"
+//   }}>
+//     <FaCheckCircle style={{ marginRight: 8, opacity: met ? 1 : 0.4 }} />
+//     <span>{text}</span>
+//   </li>
+// );
+
+// const RegistrationPage = () => {
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [input, setInput] = useState({ email: "", password: "", confirmPassword: "" });
+//   const [formState, setFormState] = useState({ status: null, message: "" });
+
+//   const navigate = useNavigate();
+
+//   // Mock requirements
+//   const requirements = [
+//     { check: input.password.length >= 8, label: "At least 8 characters" },
+//     { check: /[A-Z]/.test(input.password), label: "1 uppercase letter" },
+//     { check: /[0-9]/.test(input.password), label: "1 number" },
+//   ];
+
+//   // Form submission
+//   const handleSubmit = e => {
+//     e.preventDefault();
+//     if (input.password !== input.confirmPassword) {
+//       setFormState({ status: "error", message: "Passwords do not match!" });
+//       return;
+//     }
+//     // Add actual registration logic here
+//     setFormState({ status: "success", message: "Registered successfully!" });
+//     // navigate("/login"); // on success
+//   };
+
+//   // Animations
+//   const containerVariants = {
+//     hidden: { opacity: 0, y: 30 },
+//     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+//   };
+
+//   return (
+//     <div
+//       style={{
+//         minHeight: "100vh",
+//         display: "flex",
+//         background: THEME_WHITE,
+//         justifyContent: "center",
+//         alignItems: "center",
+//       }}
+//     >
+//       <motion.div
+//         initial="hidden"
+//         animate="visible"
+//         variants={containerVariants}
+//         style={{
+//           background: "rgba(255,255,255,0.7)",
+//           boxShadow: SHADOW,
+//           borderRadius: 20,
+//           padding: "44px 38px",
+//           maxWidth: 400,
+//           width: "100%",
+//           border: `1.5px solid ${THEME_GREEN}20`,
+//           backdropFilter: "blur(18px)", // glass effect
+//         }}
+//       >
+//         <h2 style={{
+//           textAlign: "center",
+//           color: THEME_GREEN,
+//           fontWeight: "700",
+//           marginBottom: 24,
+//           letterSpacing: "1px"
+//         }}>
+//           Create Your Account
+//         </h2>
+
+//         <AnimatePresence>
+//           {formState.status && (
+//             <motion.div
+//               initial={{ opacity: 0, y: -20 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               exit={{ opacity: 0, y: -20 }}
+//               style={{
+//                 marginBottom: 20,
+//                 padding: 12,
+//                 borderRadius: 8,
+//                 background: formState.status === "success" ? THEME_GREEN : "#ffeded",
+//                 color: formState.status === "success" ? "#fff" : "#b50000",
+//                 display: "flex",
+//                 alignItems: "center",
+//                 boxShadow: "0 2px 12px rgba(60,200,140,0.15)"
+//               }}
+//             >
+//               {formState.status === "success" ? (
+//                 <FaCheckCircle style={{ marginRight: 8 }} />
+//               ) : (
+//                 <FaExclamationTriangle style={{ marginRight: 8 }} />
+//               )}
+//               <span>{formState.message}</span>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+
+//         <form onSubmit={handleSubmit} style={{
+//           display: "flex",
+//           flexDirection: "column",
+//           gap: 22,
+//         }}>
+//           {/* Email */}
+//           <div style={{ position: "relative" }}>
+//             <input
+//               type="email"
+//               placeholder="Email"
+//               value={input.email}
+//               onChange={e => setInput(i => ({ ...i, email: e.target.value }))}
+//               required
+//               style={{
+//                 width: "100%",
+//                 padding: "12px 16px",
+//                 borderRadius: 7,
+//                 border: `1.5px solid ${THEME_GREEN}70`,
+//                 fontSize: "1rem",
+//                 outline: "none",
+//                 marginBottom: 3,
+//                 transition: "border 0.22s"
+//               }}
+//               onFocus={e => e.target.style.border = `2px solid ${THEME_GREEN}`}
+//               onBlur={e => e.target.style.border = `1.5px solid ${THEME_GREEN}70`}
+//             />
+//           </div>
+
+//           {/* Password */}
+//           <div style={{ position: "relative" }}>
+//             <input
+//               type={showPassword ? "text" : "password"}
+//               placeholder="Password"
+//               value={input.password}
+//               onChange={e => setInput(i => ({ ...i, password: e.target.value }))}
+//               required
+//               style={{
+//                 width: "100%",
+//                 padding: "12px 44px 12px 16px",
+//                 borderRadius: 7,
+//                 border: `1.5px solid ${THEME_GREEN}70`,
+//                 fontSize: "1rem",
+//                 outline: "none",
+//                 marginBottom: 3,
+//                 transition: "border 0.22s"
+//               }}
+//               onFocus={e => e.target.style.border = `2px solid ${THEME_GREEN}`}
+//               onBlur={e => e.target.style.border = `1.5px solid ${THEME_GREEN}70`}
+//             />
+//             <span
+//               onClick={() => setShowPassword(s => !s)}
+//               style={{
+//                 position: "absolute",
+//                 right: 14,
+//                 top: "50%",
+//                 transform: "translateY(-50%)",
+//                 cursor: "pointer",
+//                 color: THEME_GREEN,
+//                 fontSize: 20,
+//                 opacity: 0.8,
+//                 transition: "color 0.18s"
+//               }}
+//             >
+//               {showPassword ? <FaEyeSlash /> : <FaEye />}
+//             </span>
+//           </div>
+
+//           {/* Confirm Password */}
+//           <div style={{ position: "relative" }}>
+//             <input
+//               type={showPassword ? "text" : "password"}
+//               placeholder="Confirm Password"
+//               value={input.confirmPassword}
+//               onChange={e => setInput(i => ({ ...i, confirmPassword: e.target.value }))}
+//               required
+//               style={{
+//                 width: "100%",
+//                 padding: "12px 44px 12px 16px",
+//                 borderRadius: 7,
+//                 border: `1.5px solid ${THEME_GREEN}70`,
+//                 fontSize: "1rem",
+//                 outline: "none",
+//                 marginBottom: 3,
+//                 transition: "border 0.22s"
+//               }}
+//               onFocus={e => e.target.style.border = `2px solid ${THEME_GREEN}`}
+//               onBlur={e => e.target.style.border = `1.5px solid ${THEME_GREEN}70`}
+//             />
+//             <span
+//               onClick={() => setShowPassword(s => !s)}
+//               style={{
+//                 position: "absolute",
+//                 right: 14,
+//                 top: "50%",
+//                 transform: "translateY(-50%)",
+//                 cursor: "pointer",
+//                 color: THEME_GREEN,
+//                 fontSize: 20,
+//                 opacity: 0.8,
+//                 transition: "color 0.18s"
+//               }}
+//             >
+//               {showPassword ? <FaEyeSlash /> : <FaEye />}
+//             </span>
+//           </div>
+
+//           {/* Password requirements */}
+//           <ul style={{
+//             listStyle: "none",
+//             paddingLeft: 0,
+//             marginBottom: 5
+//           }}>
+//             {requirements.map((r, idx) => (
+//               <RequirementItem key={idx} met={r.check} text={r.label} />
+//             ))}
+//           </ul>
+
+//           {/* Register */}
+//           <motion.button
+//             whileHover={{ scale: 1.03 }}
+//             whileTap={{ scale: 0.97 }}
+//             type="submit"
+//             style={{
+//               background: THEME_GREEN,
+//               color: THEME_WHITE,
+//               border: "none",
+//               borderRadius: 8,
+//               padding: "12px 0",
+//               fontWeight: "600",
+//               fontSize: "1.05rem",
+//               boxShadow: SHADOW,
+//               cursor: "pointer",
+//               transition: "background 0.22s",
+//               marginTop: 8,
+//               letterSpacing: "0.5px"
+//             }}
+//           >
+//             Register
+//           </motion.button>
+//         </form>
+
+//         <div style={{
+//           textAlign: "center",
+//           marginTop: 18,
+//           fontSize: "0.98rem"
+//         }}>
+//           Already have an account?
+//           <Link to="/login" style={{
+//             color: THEME_GREEN,
+//             textDecoration: "none",
+//             fontWeight: "bold",
+//             marginLeft: 6,
+//             transition: "color 0.15s"
+//           }}>
+//             Login Now
+//           </Link>
+//         </div>
+//       </motion.div>
+//     </div>
+//   );
+// };
+
+// export default RegistrationPage;

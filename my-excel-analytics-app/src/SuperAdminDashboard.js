@@ -168,7 +168,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUpdate }) => {
             </button>
             <button
               onClick={() => onUpdate(editedUser)}
-              className="flex-1 bg-blue-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 border border-blue-500/50 shadow-lg"
+              className="flex-1 bg-red-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-blue-500/50 shadow-lg"
             >
               Save Changes
             </button>
@@ -644,7 +644,7 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white font-sans overflow-hidden">
+    <div className="flex h-screen bg-gradient-to-br  text-gray-600 font-sans overflow-hidden">
       <style>
         {`
         @keyframes fadeInOutUp {
@@ -674,11 +674,11 @@ const SuperAdminDashboard = () => {
 
       <aside className="w-64 bg-white bg-opacity-10 backdrop-blur-md border-r border-white/20 p-6 flex flex-col items-center shadow-lg">
         <div className="flex flex-col items-center space-y-2 mb-12 text-white">
-          <div className="bg-red-500 bg-opacity-50 p-3 rounded-full shadow-lg border border-red-400">
+          <div className="bg-red-600 p-3 rounded-full shadow-lg border border-red-600">
             <FaUserShield size={26} />
           </div>
-          <span className="text-lg font-bold">Super Admin</span>
-          <span className="px-3 py-1 bg-red-600 bg-opacity-50 rounded-full text-sm font-semibold border border-red-500">
+          <span className="text-red-600 text-lg font-bold">Super Admin</span>
+          <span className="px-3 py-1 bg-red-600 rounded-full text-sm font-semibold border border-red-500">
             {role.toUpperCase()}
           </span>
         </div>
@@ -687,8 +687,8 @@ const SuperAdminDashboard = () => {
           <button
             onClick={() => setActiveSection("dashboard")}
             className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 font-semibold ${activeSection === "dashboard"
-              ? "bg-red-600 bg-opacity-40 text-white shadow-xl border border-red-500"
-              : "hover:bg-white hover:bg-opacity-10 hover:shadow-lg"
+              ? "bg-red-600 text-white shadow-xl border border-red-500"
+              : "hover:bg-red-100 hover:shadow-lg"
               }`}
           >
             <FaChartLine />
@@ -697,8 +697,8 @@ const SuperAdminDashboard = () => {
           <button
             onClick={() => setActiveSection("manage-users")}
             className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 font-semibold ${activeSection === "manage-users"
-              ? "bg-red-600 bg-opacity-40 text-white shadow-xl border border-red-500"
-              : "hover:bg-white hover:bg-opacity-10 hover:shadow-lg"
+              ? "bg-red-600 text-white shadow-xl border border-red-500"
+              : "hover:bg-red-100 hover:shadow-lg"
               }`}
           >
             <FaUsers />
@@ -707,8 +707,8 @@ const SuperAdminDashboard = () => {
           <button
             onClick={() => setActiveSection("file-oversight")}
             className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 font-semibold ${activeSection === "file-oversight"
-              ? "bg-red-600 bg-opacity-40 text-white shadow-xl border border-red-500"
-              : "hover:bg-white hover:bg-opacity-10 hover:shadow-lg"
+              ? "bg-red-600 text-white shadow-xl border border-red-600"
+              : "hover:bg-red-100 hover:shadow-lg"
               }`}
           >
             <FaFileAlt />
@@ -717,8 +717,8 @@ const SuperAdminDashboard = () => {
           <button
             onClick={() => setActiveSection("system-health")}
             className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 font-semibold ${activeSection === "system-health"
-              ? "bg-red-600 bg-opacity-40 text-white shadow-xl border border-red-500"
-              : "hover:bg-white hover:bg-opacity-10 hover:shadow-lg"
+              ? "bg-red-600 text-white shadow-xl border border-red-600"
+              : "hover:bg-red-100 hover:shadow-lg"
               }`}
           >
             <FaDatabase />
@@ -727,8 +727,8 @@ const SuperAdminDashboard = () => {
           <button
             onClick={() => setActiveSection("settings")}
             className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 font-semibold ${activeSection === "settings"
-              ? "bg-red-600 bg-opacity-40 text-white shadow-xl border border-red-500"
-              : "hover:bg-white hover:bg-opacity-10 hover:shadow-lg"
+              ? "bg-red-600 text-white shadow-xl border border-red-600"
+              : "hover:bg-red-100 hover:shadow-lg"
               }`}
           >
             <FaCog />
@@ -739,7 +739,7 @@ const SuperAdminDashboard = () => {
         <div className="mt-auto w-full">
           <button
             onClick={handleLogout}
-            className="flex items-center justify-center space-x-3 p-3 rounded-xl w-full border border-red-500 text-red-400 font-semibold bg-red-500/20 hover:bg-red-600 hover:text-white transition-all duration-300 shadow-lg"
+            className="flex items-center justify-center space-x-3 p-3 rounded-xl w-full border border-red-500 bg-red-500 text-white font-semibold hover:bg-red-600 hover:text-white transition-all duration-300 shadow-lg"
           >
             <FaSignOutAlt />
             <span>Logout</span>
@@ -757,43 +757,43 @@ const SuperAdminDashboard = () => {
       <main className="flex-1 p-8 overflow-y-auto">
         {activeSection === "dashboard" && (
           <>
-            <header className="mb-8 border-b border-red-500 pb-2">
-              <h1 className="text-3xl font-bold text-red-400">
+            <header className="mb-8 border-b border-red-600 pb-2">
+              <h1 className="text-3xl font-bold text-red-600">
                 Super Admin Dashboard
               </h1>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                <h2 className="text-gray-300">Registered Users</h2>
-                <p className="text-4xl font-bold mt-2 text-white">{usageStats.totalUsers}</p>
+                <h2 className="text-gray-600">Registered Users</h2>
+                <p className="text-4xl font-bold mt-2 text-red-600">{usageStats.totalUsers}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                <h2 className="text-gray-300">Total Files Uploaded</h2>
-                <p className="text-4xl font-bold mt-2 text-white">{usageStats.totalFiles}</p>
+                <h2 className="text-gray-600">Total Files Uploaded</h2>
+                <p className="text-4xl font-bold mt-2 text-red-600">{usageStats.totalFiles}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                <h2 className="text-gray-300">System Uptime</h2>
-                <p className="text-4xl font-bold mt-2 text-white">{systemHealth.uptime}</p>
+                <h2 className="text-gray-600">System Uptime</h2>
+                <p className="text-4xl font-bold mt-2 text-red-600">{systemHealth.uptime}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                <h2 className="text-gray-300">Most Active User</h2>
-                <p className="text-xl font-bold mt-2 text-white">{usageStats.mostActiveUser}</p>
+                <h2 className="text-gray-600">Most Active User</h2>
+                <p className="text-xl font-bold mt-2 text-red-600">{usageStats.mostActiveUser}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                <h2 className="text-gray-300">Most Popular Report</h2>
-                <p className="text-xl font-bold mt-2 text-white">{usageStats.mostPopularReport}</p>
+                <h2 className="text-gray-600">Most Popular Report</h2>
+                <p className="text-xl font-bold mt-2 text-red-600">{usageStats.mostPopularReport}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                <h2 className="text-gray-300">Peak Usage Time</h2>
-                <p className="text-xl font-bold mt-2 text-white">{usageStats.peakUsage}</p>
+                <h2 className="text-gray-600">Peak Usage Time</h2>
+                <p className="text-xl font-bold mt-2 text-red-600">{usageStats.peakUsage}</p>
               </div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-              <h2 className="text-xl font-bold mb-4 text-red-400">System Overview</h2>
+              <h2 className="text-xl font-bold mb-4 text-red-600">System Overview</h2>
               <div className="h-64 bg-white/5 rounded-lg flex items-center justify-center border border-white/10">
-                <p className="text-gray-300">This is the Chart Area</p>
+                <p className="text-gray-500">This is the Chart Area</p>
               </div>
             </div>
           </>
@@ -802,11 +802,11 @@ const SuperAdminDashboard = () => {
         {activeSection === "manage-users" && (
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 overflow-x-auto border border-white/20">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-red-400">All Registered Users</h2>
+              <h2 className="text-xl font-bold text-red-600">All Registered Users</h2>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => setIsAddUserModalOpen(true)}
-                  className="bg-green-600 bg-opacity-40 text-white font-bold p-2 rounded-lg hover:bg-green-700 transition-colors duration-300 border border-green-500/50 flex items-center space-x-2"
+                  className="bg-green-600 text-white font-bold p-2 rounded-lg hover:bg-green-700 transition-colors duration-300 border border-green-500/50 flex items-center space-x-2"
                 >
                   <FaPlus />
                   <span>Add User</span>
@@ -820,178 +820,164 @@ const SuperAdminDashboard = () => {
                 />
               </div>
             </div>
-            <table className="min-w-full divide-y divide-white/20">
-              <thead>
-                <tr>
-                  <th
-                    className="px-6 py-3 cursor-pointer"
-                    onClick={() => requestSort("fullname")}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Full Name</span>
-                      {renderSortIcon("fullname")}
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 cursor-pointer"
-                    onClick={() => requestSort("email")}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Email</span>
-                      {renderSortIcon("email")}
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 cursor-pointer"
-                    onClick={() => requestSort("role")}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Role</span>
-                      {renderSortIcon("role")}
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 cursor-pointer"
-                    onClick={() => requestSort("isApproved")}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Approved</span>
-                      {renderSortIcon("isApproved")}
-                    </div>
-                  </th>
-                  <th
-                    className="px-6 py-3 cursor-pointer"
-                    onClick={() => requestSort("createdAt")}
-                  >
-                    <div className="flex items-center space-x-1">
-                      <span>Joined</span>
-                      {renderSortIcon("createdAt")}
-                    </div>
-                  </th>
-                  <th className="px-6 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedAndFilteredUsers.map((u) => (
-                  <tr key={u._id} className="hover:bg-white/5">
-                    <td className="px-6 py-4">{u.fullname}</td>
-                    <td className="px-6 py-4">{u.email}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-semibold ${u.role === "super-admin"
-                          ? "bg-red-800 bg-opacity-50 text-white"
-                          : u.role === "admin"
-                            ? "bg-indigo-600 bg-opacity-50 text-white"
-                            : "bg-green-600 bg-opacity-50 text-white"
-                          }`}
-                      >
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={u.isApproved}
-                        onChange={() => handleApprovalChange(u._id, !u.isApproved)}
-                        className="form-checkbox h-5 w-5 text-red-600 bg-transparent border-red-500 focus:ring-red-500"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      {new Date(u.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 flex items-center space-x-2">
-                      <select
-                        value={u.role}
-                        onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                        className="bg-white/10 text-white p-1 rounded-lg border border-white/20"
-                      >
-                        <option className="bg-gray-800" value="user">User</option>
-                        <option className="bg-gray-800" value="admin">Admin</option>
-                        <option className="bg-gray-800" value="super-admin">Super Admin</option>
-                      </select>
-                      <button
-                        onClick={() => handleDeleteUser(u._id)}
-                        className="text-red-400 hover:text-red-600 p-2 rounded-lg"
-                        title="Delete User"
-                      >
-                        <FaTrash />
-                      </button>
-                      <button
-                        onClick={() => handleRequestPasswordReset(u.email)}
-                        className="text-blue-400 hover:text-blue-600 p-2 rounded-lg"
-                        title="Reset Password"
-                      >
-                        <FaEnvelope />
-                      </button>
-                      <button
-                        onClick={() => handleOpenEditModal(u)}
-                        className="text-blue-400 hover:text-blue-600 p-2 rounded-lg"
-                        title="Edit User"
-                      >
-                        <FaCog />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <table className="min-w-full divide-y divide-blue-200/30 dark:divide-white/20">
+  <thead>
+    <tr className="text-red-600">
+      <th className="px-6 py-3 text-left cursor-pointer" onClick={() => requestSort("fullname")}>
+        <div className="flex items-center space-x-1">
+          <span>Full Name</span>
+          {renderSortIcon("fullname")}
+        </div>
+      </th>
+      <th className="px-6 py-3 text-left cursor-pointer" onClick={() => requestSort("email")}>
+        <div className="flex items-center space-x-1">
+          <span>Email</span>
+          {renderSortIcon("email")}
+        </div>
+      </th>
+      <th className="px-6 py-3 text-left cursor-pointer" onClick={() => requestSort("role")}>
+        <div className="flex items-center space-x-1">
+          <span>Role</span>
+          {renderSortIcon("role")}
+        </div>
+      </th>
+      <th className="px-6 py-3 text-center cursor-pointer" onClick={() => requestSort("isApproved")}>
+        <div className="flex items-center justify-center space-x-1">
+          <span>Approved</span>
+          {renderSortIcon("isApproved")}
+        </div>
+      </th>
+      <th className="px-6 py-3 text-left cursor-pointer" onClick={() => requestSort("createdAt")}>
+        <div className="flex items-center space-x-1">
+          <span>Joined</span>
+          {renderSortIcon("createdAt")}
+        </div>
+      </th>
+      <th className="px-6 py-3 text-center">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody className="text-gray-700 dark:text-gray-300">
+    {sortedAndFilteredUsers.map((u) => (
+      <tr key={u._id} className="hover:bg-blue-50 dark:hover:bg-white/5 transition-colors duration-200">
+        <td className="px-6 py-4 align-middle">{u.fullname}</td>
+        <td className="px-6 py-4 align-middle">{u.email}</td>
+        <td className="px-6 py-4 align-middle">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+              u.role === "super-admin"
+                ? "bg-red-700 text-white"
+                : u.role === "admin"
+                ? "bg-indigo-600 text-white"
+                : "bg-green-600 text-white"
+            }`}
+          >
+            {u.role}
+          </span>
+        </td>
+        <td className="px-6 py-4 align-middle text-center">
+          <input
+            type="checkbox"
+            checked={u.isApproved}
+            onChange={() => handleApprovalChange(u._id, !u.isApproved)}
+            className="form-checkbox h-5 w-5 text-blue-600 border-red-500 focus:ring-red-500"
+          />
+        </td>
+        <td className="px-6 py-4 align-middle">{new Date(u.createdAt).toLocaleDateString()}</td>
+        <td className="px-6 py-4 align-middle">
+          <div className="flex justify-center items-center space-x-2">
+            <select
+              value={u.role}
+              onChange={(e) => handleRoleChange(u._id, e.target.value)}
+              className="bg-white dark:bg-gray-800 dark:text-white text-gray-900 p-1 rounded-lg border border-blue-200 dark:border-white/20"
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="super-admin">Super Admin</option>
+            </select>
+            <button onClick={() => handleDeleteUser(u._id)} className="text-red-600 hover:text-red-600 p-2 rounded-lg" title="Delete User">
+              <FaTrash />
+            </button>
+            <button onClick={() => handleRequestPasswordReset(u.email)} className="text-red-600 hover:text-red-600 p-2 rounded-lg" title="Reset Password">
+              <FaEnvelope />
+            </button>
+            <button onClick={() => handleOpenEditModal(u)} className="text-red-600 hover:red-blue-600 p-2 rounded-lg" title="Edit User">
+              <FaCog />
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
           </div>
         )}
 
         {activeSection === "file-oversight" && (
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 overflow-x-auto border border-white/20">
-            <h2 className="text-xl font-bold mb-4 text-red-400">Data & File Oversight</h2>
-            <p className="mb-4 text-gray-300">Manage and monitor all uploaded files and system logs across the platform.</p>
+            <h2 className="text-xl font-bold mb-4 text-red-600">Data & File Oversight</h2>
+            <p className="mb-4 text-gray-600">Manage and monitor all uploaded files and system logs across the platform.</p>
 
-            <h3 className="text-lg font-bold text-gray-300 mb-2">File Management</h3>
-            <table className="min-w-full divide-y divide-white/20 mb-8">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3">File Name</th>
-                  <th className="px-6 py-3">Owner</th>
-                  <th className="px-6 py-3">Upload Date</th>
-                  <th className="px-6 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockFiles.map((file) => (
-                  <tr key={file.id} className="hover:bg-white/5">
-                    <td className="px-6 py-4">{file.name}</td>
-                    <td className="px-6 py-4">{file.owner}</td>
-                    <td className="px-6 py-4">{file.date}</td>
-                    <td className="px-6 py-4">
-                      <button className="text-red-400 hover:text-red-600">
-                        <FaTrash />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <h3 className="text-lg font-bold text-red-600 mb-2">File Management</h3>
+           <table className="min-w-full divide-y divide-blue-200/30 dark:divide-white/20 mb-8">
+  <thead>
+    <tr>
+      <th className="px-6 py-3 text-left text-red-600">File Name</th>
+      <th className="px-6 py-3 text-left text-red-600">Owner</th>
+      <th className="px-6 py-3 text-left text-red-600">Upload Date</th>
+      <th className="px-6 py-3 text-center text-red-600">Actions</th>
+    </tr>
+  </thead>
 
-            <h3 className="text-lg font-bold text-gray-300 mb-2">Audit Logs</h3>
+  <tbody className="text-gray-700 dark:text-gray-300">
+    {mockFiles.map((file) => (
+      <tr
+        key={file.id}
+        className="hover:bg-blue-50 text-black dark:hover:bg-white/5 transition-colors duration-200"
+      >
+        <td className="px-6 py-4 align-middle">{file.name}</td>
+        <td className="px-6 py-4 align-middle">{file.owner}</td>
+        <td className="px-6 py-4 align-middle">{file.date}</td>
+        <td className="px-6 py-4 align-middle">
+          <div className="flex justify-center items-center">
+            <button
+              className="text-red-600 hover:text-red-600 transition-colors duration-200"
+              title="Delete File"
+            >
+              <FaTrash />
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+
+            <h3 className="text-lg font-bold text-red-600 mb-2">Audit Logs</h3>
             <div className="h-64 overflow-y-auto bg-white/5 p-4 rounded-lg border border-white/10">
               {auditLogs.map(log => (
                 <div key={log.id} className="mb-2 text-sm text-gray-300">
-                  <span className="text-blue-300 mr-2">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                  <span className="font-semibold text-white mr-1">{log.user}:</span>
-                  <span>{log.details}</span>
+                  <span className="text-red-500 mr-2">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                  <span className="font-semibold text-black mr-1">{log.user}:</span>
+                  <span className="text-gray-700">{log.details}</span>
                 </div>
               ))}
             </div>
 
-            <h3 className="text-lg font-bold text-gray-300 mt-6 mb-2">Data Health</h3>
+            <h3 className="text-lg font-bold text-red-600 mt-6 mb-2">Data Health</h3>
             <div className="flex space-x-4">
               <button
                 onClick={handleRunDataCheck}
-                className="flex-1 bg-yellow-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-yellow-700 transition-colors duration-300 border border-yellow-500/50 shadow-lg"
+                className="flex-1 bg-red-600  text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-yellow-500/50 shadow-lg"
               >
                 <FaCheck className="inline mr-2" />
                 Run Data Integrity Check
               </button>
               <button
                 onClick={handleArchiveOldData}
-                className="flex-1 bg-purple-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-purple-700 transition-colors duration-300 border border-purple-500/50 shadow-lg"
+                className="flex-1 bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition-colors duration-300 border border-purple-500/50 shadow-lg"
               >
                 <FaArchive className="inline mr-2" />
                 Archive Old Files
@@ -1002,30 +988,30 @@ const SuperAdminDashboard = () => {
 
         {activeSection === "system-health" && (
           <>
-            <h2 className="text-xl font-bold mb-4 text-red-400">System Performance and Health</h2>
+            <h2 className="text-xl font-bold mb-4 text-red-600">System Performance and Health</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                <h3 className="text-gray-300">Server Load</h3>
-                <p className="text-4xl font-bold mt-2 text-white">{systemHealth.serverLoad}</p>
+                <h3 className="text-red-600 font-bold">Server Load</h3>
+                <p className="text-4xl font-bold mt-2 text-gray-700">{systemHealth.serverLoad}</p>
               </div>
               <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                <h3 className="text-gray-300">Database Status</h3>
+                <h3 className="text-red-600 font-bold">Database Status</h3>
                 <p className="text-4xl font-bold mt-2 text-white">{systemHealth.databaseStatus}</p>
               </div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 border border-white/20">
-              <h3 className="text-xl font-bold mb-4 text-red-400">Error Logs</h3>
+              <h3 className="text-xl font-bold mb-4 text-red-600">Error Logs</h3>
               <div className="h-40 overflow-y-auto bg-white/5 p-4 rounded-lg border border-white/10">
-                <div className="flex items-center space-x-2 text-yellow-400 mb-2">
+                <div className="flex items-center space-x-2 text-yellow-600 mb-2">
                   <FaExclamationTriangle />
                   <span>[10:25 AM] User "user@example.com" attempted to delete file.</span>
                 </div>
-                <div className="flex items-center space-x-2 text-red-400 mb-2">
+                <div className="flex items-center space-x-2 text-red-600 mb-2">
                   <FaTimes />
                   <span>[10:20 AM] API call to `/api/reports` failed with status 500.</span>
                 </div>
-                <div className="flex items-center space-x-2 text-green-400 mb-2">
+                <div className="flex items-center space-x-2 text-green-600 mb-2">
                   <FaCheck />
                   <span>[10:15 AM] Database connection successful.</span>
                 </div>
@@ -1033,11 +1019,11 @@ const SuperAdminDashboard = () => {
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-              <h3 className="text-xl font-bold mb-4 text-red-400">Security & Backup</h3>
+              <h3 className="text-xl font-bold mb-4 text-red-600">Security & Backup</h3>
               <div className="flex space-x-4">
                 <button
                   onClick={handleTriggerSecurityAlert}
-                  className="flex-1 bg-red-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-red-500/50 shadow-lg"
+                  className="flex-1 bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-red-500/50 shadow-lg"
                   title="Trigger Security Alert"
                 >
                   <FaLock className="inline mr-2" />
@@ -1045,7 +1031,7 @@ const SuperAdminDashboard = () => {
                 </button>
                 <button
                   onClick={handleRunSystemBackup}
-                  className="flex-1 bg-blue-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 border border-blue-500/50 shadow-lg"
+                  className="flex-1 bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-blue-500/50 shadow-lg"
                   title="Run Full System Backup"
                 >
                   <FaCloudDownloadAlt className="inline mr-2" />
@@ -1058,57 +1044,57 @@ const SuperAdminDashboard = () => {
 
         {activeSection === "settings" && (
           <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 border border-white/20">
-            <h2 className="text-xl font-bold mb-4 text-red-400">Global System Settings</h2>
+            <h2 className="text-xl font-bold mb-4 text-red-600">Global System Settings</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-gray-300">Max File Size (MB)</label>
+                <label className="block text-red-600">Max File Size (MB)</label>
                 <input
                   type="number"
                   name="maxFileSize"
                   value={globalSettings.maxFileSize}
                   onChange={handleSettingsChange}
-                  className="w-full bg-white/10 p-2 rounded-lg mt-1 text-white border border-white/20"
+                  className="w-full bg-white/10 p-2 rounded-lg mt-1 text-gray-700 border border-white/20"
                 />
               </div>
               <div>
-                <label className="block text-gray-300">Accepted File Formats</label>
+                <label className="block text-red-600">Accepted File Formats</label>
                 <input
                   type="text"
                   name="acceptedFormats"
                   value={globalSettings.acceptedFormats}
                   onChange={handleSettingsChange}
-                  className="w-full bg-white/10 p-2 rounded-lg mt-1 text-white border border-white/20"
+                  className="w-full bg-white/10 p-2 rounded-lg mt-1 text-gray-700 border border-white/20"
                 />
               </div>
               <div>
-                <label className="block text-gray-300">Data Retention Policy</label>
+                <label className="block text-red-600">Data Retention Policy</label>
                 <input
                   type="text"
                   name="dataRetentionPolicy"
                   value={globalSettings.dataRetentionPolicy}
                   onChange={handleSettingsChange}
-                  className="w-full bg-white/10 p-2 rounded-lg mt-1 text-white border border-white/20"
+                  className="w-full bg-white/10 p-2 rounded-lg mt-1 text-gray-700 border border-white/20"
                 />
               </div>
               <button
                 onClick={handleSaveSettings}
-                className="w-full bg-blue-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 border border-blue-500/50 shadow-lg"
+                className="w-full bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-red-500/50 shadow-lg"
               >
                 Save Settings
               </button>
             </div>
 
             <div className="mt-8 border-t border-white/20 pt-6">
-              <h3 className="text-xl font-bold mb-4 text-red-400">Platform Announcements</h3>
+              <h3 className="text-xl font-bold mb-4 text-red-600">Platform Announcements</h3>
               <textarea
                 value={announcement}
                 onChange={(e) => setAnnouncement(e.target.value)}
                 placeholder="Write your announcement here..."
-                className="w-full h-24 bg-white/10 p-2 rounded-lg text-white border border-white/20 placeholder-gray-300"
+                className="w-full h-24 bg-white/10 p-2 rounded-lg text-gray-700 border border-white/20 placeholder-gray-600"
               ></textarea>
               <button
                 onClick={handlePostAnnouncement}
-                className="mt-4 w-full bg-green-600 bg-opacity-40 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition-colors duration-300 border border-green-500/50 shadow-lg"
+                className="mt-4 w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition-colors duration-300 border border-green-500/50 shadow-lg"
               >
                 <FaBullhorn className="inline mr-2" />
                 Post Announcement
@@ -1116,8 +1102,8 @@ const SuperAdminDashboard = () => {
             </div>
 
             <div className="mt-8 border-t border-white/20 pt-6">
-              <h3 className="text-xl font-bold mb-4 text-red-400">Integration Management</h3>
-              <p className="text-gray-300">
+              <h3 className="text-xl font-bold mb-4 text-red-600">Integration Management</h3>
+              <p className="text-gray-700">
                 This section would allow for the configuration of third-party services like cloud storage or payment gateways.
               </p>
             </div>

@@ -14,12 +14,13 @@ const uploadFile = async (req, res) => {
     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
     const newFile = new File({
-      userId: req.user.id,
-      fileName: req.file.originalname,
-      fileId: uuidv4(),
-      data: jsonData,
-      analyses: [],
-    });
+  user: req.user.id,
+  fileName: req.file.originalname,
+  fileId: uuidv4(),
+  processedData: jsonData,
+  analyses: [],
+});
+
 
     await newFile.save();
 
@@ -37,14 +38,13 @@ const uploadFile = async (req, res) => {
 
 const getFiles = async (req, res) => {
   try {
-    const files = await File.find({ userId: req.user.id }).sort({
-      uploadDate: -1,
-    });
+    const files = await File.find({ user: req.user.id }).sort({ uploadDate: -1 });
     res.status(200).json(files);
   } catch (error) {
     res.status(500).json({ error: "Failed to retrieve files." });
   }
 };
+
 
 const saveAnalysis = async (req, res) => {
   const { fileId } = req.params;
