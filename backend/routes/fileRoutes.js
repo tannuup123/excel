@@ -18,6 +18,26 @@ router.post("/upload", verifyToken, upload.single('excelFile'), uploadFile);
 // POST /api/files/:fileId/analyze — Save a chart analysis for a file
 router.post("/:fileId/analyze", verifyToken, saveAnalysis);
 
+// GET /api/files/:fileId — Get details of a specific file
+router.get("/:fileId", verifyToken, async (req, res) => {
+  try {
+    const file = await File.findOne({ fileId: req.params.fileId, user: req.user.id });
+    if (!file) {
+      return res.status(404).json({ error: "File not found." });
+    }
+    res.status(200).json({
+      fileId: file.fileId,
+      fileName: file.fileName,
+      uploadDate: file.uploadDate,
+      data: file.processedData,
+      analyses: file.analyses,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to load file." });
+  }
+});
+
+
 // GET admin stats
 router.get("/stats", verifyToken, async (req, res) => {
   try {

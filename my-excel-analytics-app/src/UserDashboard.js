@@ -15,6 +15,8 @@ import {
   FaSun,
   FaMoon,
   FaChartPie,
+  FaChartBar,
+  FaCube,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { Line, Bar, Pie } from "react-chartjs-2";
@@ -32,8 +34,7 @@ import {
 } from "chart.js";
 import { motion } from "framer-motion";
 import clsx from "clsx";
-import { DarkModeContext } from './contexts/DarkModeContext'; 
-
+import { DarkModeContext } from "./contexts/DarkModeContext";
 
 ChartJS.register(
   CategoryScale,
@@ -56,9 +57,10 @@ const UserDashboard = () => {
   const [excelData, setExcelData] = useState(null);
   const [chartData, setChartData] = useState(null);
   const [chartType, setChartType] = useState("line");
-  const [xAxis, setXAxis] = useState("");
+  const [xAxis, setXAxis] = useState([]);
   const [yAxis, setYAxis] = useState([]);
   const [columnHeaders, setColumnHeaders] = useState([]);
+  const [loadingFromHistory, setLoadingFromHistory] = useState(false);
   const [fileHistory, setFileHistory] = useState([]);
   const [currentFileId, setCurrentFileId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -72,11 +74,10 @@ const UserDashboard = () => {
     lastActive: "Never",
   });
   const [aiInsight, setAiInsight] = useState("");
-  // const [isDarkMode, setIsDarkMode] = useState(true);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
-  // Use the global context
-  const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
 
+  // Use the global context
+  const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
 
   useEffect(() => {
     const fetchUserDataAndFiles = async () => {
@@ -122,21 +123,29 @@ const UserDashboard = () => {
     fetchUserDataAndFiles();
   }, [navigate]);
 
-  // ----- Track uploaded excel headers -----
-  useEffect(() => {
-    if (excelData?.length) {
-      const headers = Object.keys(excelData[0]);
-      setColumnHeaders(headers);
-      setXAxis(headers[0] || "");
-      setYAxis(headers.slice(1) || []);
-      setIsFileUploaded(true);
-    } else {
-      setColumnHeaders([]);
-      setXAxis("");
-      setYAxis([]);
-      setIsFileUploaded(false);
+  // Track uploaded excel headers
+useEffect(() => {
+  if (excelData?.length) {
+    const headers = Object.keys(excelData[0]);
+    setColumnHeaders(headers);
+
+    // X-axis default: first column
+    setXAxis(headers.length > 0 ? [headers[0]] : []);
+
+    // ✅ Only auto-select all Y-axis if NOT loading from history
+    if (!loadingFromHistory) {
+      setYAxis(headers.length > 1 ? headers.slice(1) : []);
     }
-  }, [excelData]);
+
+    setIsFileUploaded(true);
+    setLoadingFromHistory(false); // reset after load
+  } else {
+    setColumnHeaders([]);
+    setXAxis("");
+    setYAxis([]);
+    setIsFileUploaded(false);
+  }
+}, [excelData, loadingFromHistory]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -167,12 +176,21 @@ const UserDashboard = () => {
       setIsFileUploaded(true);
       setActiveTab("analytics");
       setIsReportsDropdownOpen(false);
+
+      // Scroll to the analytics section after tab activation
+      setTimeout(() => {
+        const element = document.getElementById("analytics-file-loaded-section");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 150);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -208,97 +226,132 @@ const UserDashboard = () => {
     }
   };
 
-  const generateChart = useCallback(async () => {
-    if (!excelData || !xAxis || yAxis.length === 0) {
-      setError("Please upload a file and select both X and Y axes.");
+const generateChart = useCallback(async () => {
+  if (!excelData || !xAxis || yAxis.length === 0) {
+    setError("Please upload a file and select both X and Y axes.");
+    setChartData(null);
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+
+  // ✅ Always use first selected X-axis value from state
+  const labels = excelData.map(row => row[xAxis[0]]);
+
+  // Chart creation logic
+  if (chartType === "pie") {
+    if (yAxis.length > 1) {
+      setError("Pie charts can only be generated with a single Y-axis. Please select only one.");
       setChartData(null);
+      setLoading(false);
       return;
     }
-    setLoading(true);
-    setError("");
 
-    const labels = excelData.map((row) => row[xAxis]);
+    const values = excelData.map(row => parseFloat(row[yAxis[0]]));
+    const newChartData = {
+      labels,
+      datasets: [
+        {
+          label: yAxis[0], // ✅ Always take single label
+          data: values,
+          backgroundColor: labels.map(() =>
+            `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
+              Math.random() * 255
+            )}, ${Math.floor(Math.random() * 255)}, 0.5)`
+          ),
+          borderColor: "rgba(255, 255, 255, 1)",
+          borderWidth: 1,
+        },
+      ],
+    };
+    setChartData(newChartData);
 
-    if (chartType === "pie") {
-      if (yAxis.length > 1) {
-        setError(
-          "Pie charts can only be generated with a single Y-axis. Please select only one."
-        );
-        setChartData(null);
-        setLoading(false);
-        return;
-      }
-      const values = excelData.map((row) => parseFloat(row[yAxis[0]]));
-      const newChartData = {
-        labels,
-        datasets: [
-          {
-            label: yAxis[0],
-            data: values,
-            backgroundColor: labels.map(
-              () =>
-                `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(
-                  Math.random() * 255
-                )}, ${Math.floor(Math.random() * 255)}, 0.5)`
-            ),
-            borderColor: "rgba(255, 255, 255, 1)",
-            borderWidth: 1,
-          },
-        ],
-      };
-      setChartData(newChartData);
-    } else if (chartType === "3d") {
-      if (yAxis.length < 2) {
-        setError(
-          "3D charts require at least two Y-axes. Please select two or more."
-        );
-        setChartData(null);
-        setLoading(false);
-        return;
-      }
-      const trace = {
-        type: "scatter3d",
-        mode: "lines+markers",
-        x: labels,
-        y: excelData.map((row) => parseFloat(row[yAxis[0]])),
-        z: excelData.map((row) => parseFloat(row[yAxis[1]])),
-        marker: { size: 4 },
-        line: { width: 2 },
-      };
-      setChartData([trace]);
-    } else {
-      const datasets = yAxis.map((col, index) => ({
-        label: col,
-        data: excelData.map((row) => parseFloat(row[col])),
-        backgroundColor: `rgba(${53 + index * 50}, ${162 + index * 10}, ${
-          235 - index * 15
-        }, 0.5)`,
-        borderColor: `rgba(${53 + index * 50}, ${162 + index * 10}, ${
-          235 - index * 15
-        }, 1)`,
-        borderWidth: 1,
-      }));
-      setChartData({ labels, datasets });
+  } else if (chartType === "3d") {
+    if (yAxis.length < 2) {
+      setError("3D charts require at least two Y-axes. Please select two or more.");
+      setChartData(null);
+      setLoading(false);
+      return;
     }
 
-    if (currentFileId) {
-      const token = localStorage.getItem("token");
-      try {
-        await fetch(`${API_URL}/files/${currentFileId}/analyze`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ chartType, xAxis, yAxis }),
-        });
-      } catch (err) {
-        console.error("Failed to save analysis to backend:", err);
-      }
-    }
+    const trace = {
+      type: "scatter3d",
+      mode: "lines+markers",
+      x: labels,
+      y: excelData.map(row => parseFloat(row[yAxis[0]])),
+      z: excelData.map(row => parseFloat(row[yAxis[1]])),
+      marker: { size: 4 },
+      line: { width: 2 },
+    };
+    setChartData([trace]);
 
-    setLoading(false);
-  }, [excelData, xAxis, yAxis, chartType, currentFileId]);
+  } else {
+    // ✅ Only use selected Y-axis values from state
+    const datasets = yAxis.map((col, index) => ({
+      label: col,
+      data: excelData.map(row => parseFloat(row[col])),
+      backgroundColor: `rgba(${53 + index * 50}, ${162 + index * 10}, ${
+        235 - index * 15
+      }, 0.5)`,
+      borderColor: `rgba(${53 + index * 50}, ${162 + index * 10}, ${
+        235 - index * 15
+      }, 1)`,
+      borderWidth: 1,
+    }));
+    setChartData({ labels, datasets });
+  }
+
+  // ✅ Save analysis + refresh file history
+  if (currentFileId) {
+    const token = localStorage.getItem("token");
+    try {
+      await fetch(`${API_URL}/files/${currentFileId}/analyze`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          chartType,
+          xAxis: Array.isArray(xAxis) ? xAxis[0] : xAxis, // single value
+          yAxis: [...yAxis], // exact selection
+        }),
+      });
+
+      // Refresh history immediately
+      const filesRes = await fetch(`${API_URL}/files`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const updatedFiles = await filesRes.json();
+      setFileHistory(updatedFiles);
+    } catch (err) {
+      console.error("Failed to save analysis to backend:", err);
+    }
+  }
+
+  setLoading(false);
+
+  // Scroll to chart display
+  setTimeout(() => {
+    const element = document.getElementById("data-visualization-section");
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, 150);
+}, [excelData, xAxis, yAxis, chartType, currentFileId, API_URL]);
+
+useEffect(() => {
+  if (loadingFromHistory && xAxis.length > 0 && yAxis.length > 0) {
+    generateChart(); // uses latest states
+    const chartSection = document.getElementById("data-visualization-section");
+    if (chartSection) {
+      chartSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    setLoadingFromHistory(false);
+  }
+}, [loadingFromHistory, xAxis, yAxis, generateChart]);
+
 
   const handleGetAiInsight = async () => {
     if (!excelData || !xAxis || yAxis.length === 0) {
@@ -353,35 +406,40 @@ const renderChart = () => {
       </div>
     );
 
-  // Chart.js options with green/white theme
+    // Dynamic colors for dark/light theme
+  const axisColor = isDarkMode ? "#ffffff" : "#000000";
+  const gridColor = isDarkMode ? "#444444" : "#cccccc";
+  const bgColor   = isDarkMode ? "#1f2937" : "#ffffff"; // Tailwind gray-900 for dark bg
+
   const options = {
     responsive: true,
     plugins: {
       legend: {
         position: "top",
         labels: {
-          color: "var(--color-fg)", // legend text color
+          color: axisColor, // legend text color
         },
       },
       title: {
         display: true,
         text: `Chart of ${yAxis.join(", ")} vs ${xAxis}`,
-        color: "var(--color-fg)", // title color
+        color: axisColor, // title color
       },
     },
     scales: {
       x: {
-        ticks: { color: "var(--color-fg)" },
-        grid: { color: "var(--color-subtle)" }
+        ticks: { color: axisColor },
+        grid: { color: gridColor },
       },
       y: {
-        ticks: { color: "var(--color-fg)" },
-        grid: { color: "var(--color-subtle)" }
+        ticks: { color: axisColor },
+        grid: { color: gridColor },
       },
     },
     maintainAspectRatio: false,
-    backgroundColor: "var(--color-bg)", // applies for Chart.js 4.x+
+    backgroundColor: bgColor,
   };
+
 
   if (chartType === "3d") {
     return (
@@ -458,7 +516,10 @@ const renderContent = () => {
           </div>
 
           {/* Upload + Config */}
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mb-8">
+          <div
+            id="analytics-file-loaded-section"  // Add this ID to enable scrollIntoView targeting
+            className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 mb-8"
+          >
             <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100 flex items-center space-x-2">
               <span>New Analysis</span>
               <div className="relative group">
@@ -499,11 +560,15 @@ const renderContent = () => {
                       X-Axis
                     </label>
                     <select
+                      multiple
                       value={xAxis}
-                      onChange={(e) => setXAxis(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-gray-50 dark:bg-gray-700 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:text-gray-100"
+                      onChange={(e) =>
+                        setXAxis(
+                          Array.from(e.target.selectedOptions, (option) => option.value)
+                        )
+                      }
+                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm h-32 p-2 bg-gray-50 dark:bg-gray-700 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 dark:text-gray-100"
                     >
-                      <option value="">Select X-Axis</option>
                       {columnHeaders.map((h) => (
                         <option key={h} value={h}>
                           {h}
@@ -552,17 +617,18 @@ const renderContent = () => {
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
                   <button
-                    onClick={generateChart}
-                    disabled={!excelData?.length || xAxis === "" || yAxis.length === 0}
-                    className={`flex-1 p-3 rounded-lg text-white font-semibold transition-all flex items-center justify-center space-x-2 ${
-                      !excelData?.length || xAxis === "" || yAxis.length === 0
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700"
-                    }`}
-                  >
-                    <FaChartLine />
-                    <span>Generate Chart</span>
-                  </button>
+  onClick={generateChart}
+  disabled={!excelData?.length || xAxis === "" || yAxis.length === 0}
+  className={`flex-1 p-3 rounded-lg text-white font-semibold transition-all flex items-center justify-center space-x-2 ${
+    !excelData?.length || xAxis === "" || yAxis.length === 0
+      ? "bg-gray-400 cursor-not-allowed"
+      : "bg-green-600 hover:bg-green-700"
+  }`}
+>
+  <FaChartLine />
+  <span>Generate Chart</span>
+</button>
+
                   <button
                     onClick={handleGetAiInsight}
                     className="flex-1 p-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition-all flex items-center justify-center space-x-2"
@@ -576,7 +642,7 @@ const renderContent = () => {
           </div>
 
           {/* Chart Display */}
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 relative min-h-[400px]">
+          <div id="data-visualization-section" className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 relative min-h-[400px] scroll-mt-6">
             <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
               Your Data Visualization
             </h2>
@@ -586,7 +652,7 @@ const renderContent = () => {
             {chartData && (
               <button
                 onClick={handleDownloadChart}
-                className="absolute bottom-8 right-8 p-3 bg-gray-800 dark:bg-gray-900 text-white rounded-full hover:bg-gray-900 dark:hover:bg-gray-700 transition-colors shadow-lg"
+                className="absolute bottom-8 right-8 p-3 bg-gray-800 dark:bg-white dark:text-black text-white rounded-full hover:bg-gray-900 dark:hover:bg-gray-300 transition-colors shadow-lg"
               >
                 <FaDownload />
               </button>
@@ -641,20 +707,68 @@ const renderContent = () => {
                         No analysis performed yet.
                       </p>
                     ) : (
-                      <ul className="list-disc list-inside space-y-1 text-sm">
-                        {file.analyses?.map((analysis, index) => (
-                          <li key={index} className="text-gray-600 dark:text-gray-300">
-                            Chart Type:{" "}
-                            <span className="font-mono text-green-600 dark:text-green-400">
-                              {analysis.chartType}
-                            </span>
-                            , X-Axis:{" "}
-                            <span className="font-mono text-green-600 dark:text-green-400">
-                              {analysis.xAxis}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
+                    <ul className="space-y-3">
+  {[...(file.analyses || [])]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // 🆕 Sort newest first
+    .map((analysis, index) => {
+      let ChartIcon, typeColor;
+      switch (analysis.chartType) {
+        case "line":
+          ChartIcon = FaChartLine;
+          typeColor = "text-blue-500";
+          break;
+        case "bar":
+          ChartIcon = FaChartBar;
+          typeColor = "text-yellow-500";
+          break;
+        case "pie":
+          ChartIcon = FaChartPie;
+          typeColor = "text-purple-500";
+          break;
+        case "3d":
+          ChartIcon = FaCube;
+          typeColor = "text-pink-500";
+          break;
+        default:
+          ChartIcon = FaChartLine;
+          typeColor = "text-gray-500";
+      }
+
+      return (
+        <li
+          key={index}
+         onClick={async () => {
+  setLoadingFromHistory(true);
+  await loadFileFromHistory(file.fileId, file.fileName);
+  setActiveTab("analytics");
+  setChartType(analysis.chartType);
+  setXAxis([analysis.xAxis]);
+  setYAxis([...analysis.yAxis]); // exact from history
+}}
+
+          className="flex items-start space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+        >
+          <ChartIcon className={`mt-1 ${typeColor}`} size={18} />
+          <div>
+            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              {analysis.chartType.charAt(0).toUpperCase() + analysis.chartType.slice(1)} Chart
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              X: <span className="font-mono">{analysis.xAxis}</span> &nbsp;|&nbsp;
+              Y: <span className="font-mono">{analysis.yAxis.join(", ")}</span>
+            </p>
+            {analysis.createdAt && (
+              <p className="text-xs text-gray-400 mt-1">
+                {new Date(analysis.createdAt).toLocaleString()}
+              </p>
+            )}
+          </div>
+        </li>
+      );
+    })}
+</ul>
+
+
                     )}
                   </div>
                   <button
@@ -704,6 +818,7 @@ const renderContent = () => {
 };
 
 
+
  return (
   <div className="flex h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
     {/* {Sidebar} */}
@@ -714,25 +829,14 @@ const renderContent = () => {
 >
   {/* Logo Section */}
   <div className="mb-12 text-center">
-    <motion.div
-      animate={{
-        rotate: [0, 10, -10, 10, -10, 0],
-        scale: [1, 1.05, 1, 1.05, 1],
-      }}
-      transition={{
-        duration: 3,
-        repeat: Infinity,
-        repeatType: "loop",
-        ease: "easeInOut",
-      }}
-      className="text-green-600 dark:text-green-300 transition-transform duration-300 hover:scale-110 mx-auto cursor-pointer"
-    >
-      <FaChartPie size={40} />
-    </motion.div>
-    <p className="text-2xl font-bold mt-2 tracking-wide text-green-800 dark:text-green-100">
-      Sheet <span className="text-green-600 dark:text-green-400">Insights</span>
-    </p>
+  <div className="text-green-600 dark:text-green-300 transition-transform duration-300 mx-auto cursor-pointer flex justify-center items-center">
+    <FaChartPie size={40} />
   </div>
+  <p className="text-2xl font-bold mt-2 tracking-wide text-green-800 dark:text-green-100">
+    Sheet <span className="text-green-600 dark:text-green-400">Insights</span>
+  </p>
+</div>
+
 
   {/* Navigation */}
   <nav className="space-y-3">

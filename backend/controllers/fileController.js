@@ -51,7 +51,7 @@ const saveAnalysis = async (req, res) => {
   const { chartType, xAxis, yAxis } = req.body;
 
   try {
-    const file = await File.findOne({ fileId, userId: req.user.id });
+    const file = await File.findOne({ fileId, user: req.user.id }); // ✅ FIXED
     if (!file) {
       return res.status(404).json({ error: "File not found." });
     }
@@ -59,16 +59,15 @@ const saveAnalysis = async (req, res) => {
     file.analyses.push({ chartType, xAxis, yAxis });
     await file.save();
 
-    res
-      .status(200)
-      .json({
-        message: "Analysis saved successfully.",
-        analyses: file.analyses,
-      });
+    res.status(200).json({
+      message: "Analysis saved successfully.",
+      analyses: file.analyses,
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to save analysis." });
   }
 };
+
 
 module.exports = {
   uploadFile,
