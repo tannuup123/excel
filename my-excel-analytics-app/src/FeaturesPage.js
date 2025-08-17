@@ -2,6 +2,7 @@ import React, { useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DarkModeContext } from "./contexts/DarkModeContext";
+import Header from "./Header"; 
 import {
   FaSun,
   FaMoon,
@@ -62,27 +63,8 @@ const FeaturesPage = () => {
 
   return (
     <div className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed transition-colors duration-500">
-      <header className="fixed top-0 left-0 w-full z-50 py-4 px-6 md:px-12 flex justify-between items-center bg-white/75 dark:bg-gray-900/75 backdrop-filter backdrop-blur-lg shadow-lg border-b border-gray-200 dark:border-gray-700 transition-colors duration-500">
-        <div className="flex items-center space-x-2">
-          <img src="/Sheet insights favicon.png" alt="SheetInsights" className="w-10 h-10 object-contain" />
-          <span className="text-2xl font-bold truncate ml-2">
-            <span className="text-black dark:text-white">Sheet</span>
-            <span className="text-green-500">Insights</span>
-          </span>
-        </div>
-        <nav className="hidden md:flex space-x-6">
-          <Link to="/" className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors">Home</Link>
-          <Link to="/about-us" className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors">About Us</Link>
-          <a href="#features" className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors">Features</a>
-        </nav>
-        <div className="flex items-center space-x-4">
-          <button onClick={toggleDarkMode} className="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-            {isDarkMode ? <FaSun className="h-5 w-5" /> : <FaMoon className="h-5 w-5" />}
-          </button>
-          <Link to="/login" className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition-colors">Login</Link>
-          <Link to="/register" className="bg-green-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors">Register</Link>
-        </div>
-      </header>
+      
+      <Header />
 
       <section className="py-20 bg-gray-100 dark:bg-gray-900 transition-colors duration-500">
         <div className="container mx-auto px-6 max-w-5xl pt-16 text-center">

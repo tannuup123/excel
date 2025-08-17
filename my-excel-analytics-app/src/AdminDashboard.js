@@ -1,3 +1,5 @@
+import { useAuth } from './contexts/AuthContext';
+import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { FaChartLine, FaUsers, FaSignOutAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +30,7 @@ function fillDateGaps(growthData) {
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth(); // Get the logout function from context
   const [activeSection, setActiveSection] = useState("dashboard");
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -108,8 +111,8 @@ const AdminDashboard = () => {
 
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
+    logout(); // This will clear the context state and localStorage
+    navigate("/", { replace: true });
   };
 
   const handleDeleteUser = async (userId, userRole) => {

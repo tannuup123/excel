@@ -5,22 +5,168 @@ const verifyToken = require("../middleware/verifyToken");
 const bcrypt = require('bcryptjs'); // You need bcrypt for password hashing
 const crypto = require('crypto'); // Used to generate the random password 
 const nodemailer = require('nodemailer'); // Used for sending the email
+const multer = require('multer'); // For image uploads just added
+const path = require('path'); // For file paths just added
 
-/**
- * ✅ Get logged-in user's profile (place FIRST before any :id route!)
- */
+
+// --- Multer Setup for Image Upload ---
+const storage = multer.diskStorage({
+    destination: './uploads/',
+    filename: function(req, file, cb) {
+        cb(null, 'user-' + req.user.id + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10000000 }, // 10MB limit
+    fileFilter: function(req, file, cb) {
+        const filetypes = /jpeg|jpg|png/;
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = filetypes.test(file.mimetype);
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb('Error: Please upload images only (jpeg, jpg, png).');
+        }
+    }
+}).single('profilePicture');
+
+// --- Nodemailer Setup ---
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD
+    }
+});
+
+//=================================================
 router.get("/profile", verifyToken, async (req, res) => {
   try {
-    const user = await User.findById(
-      req.user.id,
-      "fullname email role createdAt"
-    );
+    const user = await User.findById(req.user.id, "-password -otp -otpExpires");
     if (!user) return res.status(404).json({ error: "User not found." });
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user profile." });
   }
 });
+
+// POST /upload-picture - Upload Profile Picture
+router.post('/upload-picture', verifyToken, (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ error: err });
+        }
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file selected!' });
+        }
+        try {
+            const user = await User.findById(req.user.id);
+            user.profilePicture = req.file.path; // Save the file path
+            await user.save();
+            res.status(200).json({
+                message: 'Profile picture updated successfully!',
+                filePath: req.file.path
+            });
+        } catch (dbError) {
+            res.status(500).json({ error: 'Database error while saving picture.' });
+        }
+    });
+});
+// PUT /profile - Update user's fullname
+router.put("/profile", verifyToken, async (req, res) => {
+    try {
+        const { fullname } = req.body;
+        if (!fullname) return res.status(400).json({ error: "Fullname is required." });
+        
+        const user = await User.findByIdAndUpdate(req.user.id, { fullname }, { new: true }).select("-password -otp -otpExpires");
+        res.status(200).json({ message: "Profile updated successfully.", user });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to update profile." });
+    }
+});
+
+// POST /initiate-change - Send OTP for email/password change
+router.post('/initiate-change', verifyToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        user.otp = otp;
+        user.otpExpires = Date.now() + 600000; // 10 minutes
+        await user.save();
+
+        await transporter.sendMail({
+            to: user.email,
+            from: process.env.EMAIL_USERNAME,
+            subject: 'Your Verification Code',
+            html: `<p>Your verification code is: <strong>${otp}</strong>. It will expire in 10 minutes.</p>`
+        });
+
+        res.status(200).json({ message: `An OTP has been sent to ${user.email}.` });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to send OTP." });
+    }
+});
+
+// POST /verify-change-email - Verify OTP and change email
+router.post('/verify-change-email', verifyToken, async (req, res) => {
+    const { newEmail, otp } = req.body;
+    try {
+        const user = await User.findOne({ _id: req.user.id, otp: otp, otpExpires: { $gt: Date.now() } });
+        if (!user) return res.status(400).json({ error: 'Invalid or expired OTP.' });
+        
+        const emailExists = await User.findOne({ email: newEmail });
+        if (emailExists) return res.status(400).json({ error: 'This email is already in use.' });
+
+        user.email = newEmail;
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+        res.status(200).json({ message: 'Email address updated successfully.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update email.' });
+    }
+});
+
+router.post('/verify-change-password', verifyToken, async (req, res) => {
+    try {
+        const { newPassword, otp } = req.body;
+
+        // Step 1: Find the user with the OTP.
+        const user = await User.findOne({ _id: req.user.id, otp: otp, otpExpires: { $gt: Date.now() } });
+
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid or expired OTP.' });
+        }
+
+        // Step 2: Before changing the password, compare the new password with the old one.
+        const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+        // Step 3: If the password is the same, send an error.
+        if (isSamePassword) {
+            return res.status(400).json({
+                error: "New password cannot be the same as the old password. Cancel & Try Again"
+            });
+        }
+
+        // Step 4: If the password is different, then change it.
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+
+        // Step 5: Remove the OTP and save the user.
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        res.json({ message: "Password changed successfully." });
+
+    } catch (error) {
+        console.error("Password change error:", error);
+        res.status(500).json({ error: 'Failed to update password.' });
+    }
+});
+//===========================================================================================
 
 // =================== NEW ROUTE ===================
 /**

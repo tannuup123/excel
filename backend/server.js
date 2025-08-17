@@ -3,14 +3,15 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require('crypto'); 
+const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const path = require('path'); 
 require("dotenv").config();
 
 const verifyToken = require("./middleware/verifyToken");
 const userRoutes = require("./routes/userRoutes");
 const fileRoutes = require("./routes/fileRoutes");
-const adminRoutes = require("./routes/adminRoutes"); // 🆕 Added
+const adminRoutes = require("./routes/adminRoutes");
 const User = require("./models/user");
 
 const app = express();
@@ -19,6 +20,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
 
 // MongoDB Connection
 mongoose
@@ -32,37 +34,26 @@ mongoose
     process.exit(1);
   });
 
-/**
- * =================== REGISTER ===================
- */
+// =================== PUBLIC ROUTES ===================
 app.post("/api/register", async (req, res) => {
   try {
     const { fullname, email, password, role, phoneNumber, employeeId } = req.body;
-
     const validRoles = ["user", "admin", "super-admin"];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ error: "Invalid role selected." });
     }
-
     if (role === "admin" && (!phoneNumber || !employeeId)) {
       return res.status(400).json({
         error: "Admin registration requires phone number and employee ID.",
       });
     }
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
         .status(400)
         .json({ error: `The email '${email}' is already in use.` });
     }
-
-    const adminRoutes = require('./routes/adminRoutes');
-app.use('/api/admin', verifyToken, adminRoutes);
-
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = new User({
       fullname,
       email,
@@ -72,7 +63,6 @@ app.use('/api/admin', verifyToken, adminRoutes);
       employeeId: role === "admin" ? employeeId : undefined,
       isApproved: role === "super-admin" ? true : false,
     });
-
     await newUser.save();
     res.status(201).json({ message: "User registered successfully!" });
   } catch (error) {
@@ -83,37 +73,28 @@ app.use('/api/admin', verifyToken, adminRoutes);
   }
 });
 
-/**
- * =================== LOGIN ===================
- */
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password, role } = req.body;
     const user = await User.findOne({ email });
-
     if (!user)
       return res.status(400).json({ error: "Invalid email or password." });
-
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res.status(400).json({ error: "Invalid email or password." });
-
     if (user.role !== "super-admin" && user.role !== role) {
       return res
         .status(403)
         .json({ error: `You are not authorized to login as ${role}.` });
     }
-
     if (user.role === "admin" && !user.isApproved) {
       return res.status(403).json({ error: "Admin approval pending." });
     }
-
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-
     res.status(200).json({
       message: "Login successful!",
       user: {
@@ -129,9 +110,6 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-/**
- * =================== FORGOT PASSWORD ===================
- */
 app.post("/api/forgot-password", async (req, res) => {
   const { email } = req.body;
   let user;
@@ -142,7 +120,6 @@ app.post("/api/forgot-password", async (req, res) => {
         .status(404)
         .json({ error: "User with that email does not exist." });
     }
-
     const resetToken = crypto.randomBytes(32).toString("hex");
     user.passwordResetToken = crypto
       .createHash("sha256")
@@ -150,9 +127,7 @@ app.post("/api/forgot-password", async (req, res) => {
       .digest("hex");
     user.passwordResetExpires = Date.now() + 3600000; // 1 hour
     await user.save();
-
     const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
@@ -160,7 +135,6 @@ app.post("/api/forgot-password", async (req, res) => {
         pass: process.env.EMAIL_PASSWORD,
       },
     });
-
     const mailOptions = {
       to: user.email,
       from: process.env.EMAIL_USERNAME,
@@ -169,7 +143,6 @@ app.post("/api/forgot-password", async (req, res) => {
              <p>Please click on the following link, or paste this into your browser to complete the process within one hour:</p>
              <a href="${resetURL}">Reset Password</a>`,
     };
-
     await transporter.sendMail(mailOptions);
     res.status(200).json({ message: "Password reset email sent." });
   } catch (err) {
@@ -178,58 +151,38 @@ app.post("/api/forgot-password", async (req, res) => {
   }
 });
 
-/**
- * =================== RESET PASSWORD ===================
- */
 app.post("/api/reset-password/:token", async (req, res) => {
   const hashedToken = crypto
     .createHash("sha256")
     .update(req.params.token)
     .digest("hex");
-
   try {
     const user = await User.findOne({
       passwordResetToken: hashedToken,
       passwordResetExpires: { $gt: Date.now() },
     });
-
     if (!user) {
       return res.status(400).json({ error: "Token is invalid or has expired." });
     }
-
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     user.password = hashedPassword;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save();
-
     res.status(200).json({ message: "Password has been reset successfully." });
   } catch (err) {
     res.status(500).json({ error: "Failed to reset password." });
   }
 });
 
-/**
- * =================== PROTECTED ROUTES ===================
- */
-app.use("/api/users", verifyToken, userRoutes);
-app.use("/api/files", verifyToken, fileRoutes);
-app.use("/api/admin", verifyToken, adminRoutes); // 🆕 Added Admin Routes
-
-/**
- * =================== ONE-TIME SUPER ADMIN CREATION ===================
- */
 app.post("/api/create-super-admin", async (req, res) => {
   try {
     const { fullname, email, password } = req.body;
     const existingSuperAdmin = await User.findOne({ role: "super-admin" });
-
     if (existingSuperAdmin) {
       return res.status(400).json({ error: "A super admin already exists." });
     }
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = new User({
       fullname,
       email,
@@ -237,7 +190,6 @@ app.post("/api/create-super-admin", async (req, res) => {
       role: "super-admin",
       isApproved: true,
     });
-
     await newUser.save();
     res.status(201).json({ message: "Super Admin created successfully!" });
   } catch (error) {
@@ -246,7 +198,10 @@ app.post("/api/create-super-admin", async (req, res) => {
   }
 });
 
-/**
- * =================== START SERVER ===================
- */
+// =================== PROTECTED ROUTES ===================
+app.use("/api/users", verifyToken, userRoutes);
+app.use("/api/files", verifyToken, fileRoutes);
+app.use("/api/admin", verifyToken, adminRoutes);
+
+// =================== START SERVER ===================
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

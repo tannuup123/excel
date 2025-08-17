@@ -12,8 +12,12 @@ const userSchema = new mongoose.Schema({
   phoneNumber: { type: String },
   employeeId: { type: String },
   isApproved: { type: Boolean, default: false },
-  passwordResetToken: String, 
+  passwordResetToken: String,
   passwordResetExpires: Date,
+  // ✅ NEW FIELDS
+  profilePicture: { type: String, default: 'uploads/default-avatar.png' }, // Default picture path
+  otp: { type: String },
+  otpExpires: { type: Date },
   deletedAt: { type: Date, default: null } // 🆕 NEW FIELD for soft delete
 }, { timestamps: true });
 

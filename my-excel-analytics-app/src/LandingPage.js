@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { DarkModeContext } from "./contexts/DarkModeContext";
-import { Link } from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactTyped } from "react-typed";
 import CountUp from "react-countup";
@@ -32,6 +33,25 @@ const LandingPage = () => {
   const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
   const [startTyping, setStartTyping] = useState(false);
   const [key, setKey] = useState(0);
+  const { token, userRole, logout } = useAuth(); 
+  const navigate = useNavigate(); 
+
+  // Helper to determine the correct dashboard path
+  const getDashboardPath = () => {
+    switch (userRole) {
+      case 'admin':
+        return '/admin-dashboard';
+      case 'super-admin':
+        return '/super-admin';
+      default:
+        return '/user-dashboard';
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/'); // Navigate to landing page after logout
+  };
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 50 },
@@ -170,18 +190,39 @@ const LandingPage = () => {
               <FaMoon className="h-5 w-5" />
             )}
           </button>
-          <Link
-            to="/login"
-            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="bg-green-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors duration-300"
-          >
-            Register
-          </Link>
+          {token ? (
+            // If user is logged in, show a dynamic Dashboard link and Logout
+            <>
+              <Link
+                to={getDashboardPath()} // Use the function to set the dynamic path
+                className="bg-green-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors duration-300"
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            // If user is logged out, show Login and Register
+            <>
+              <Link
+                to="/login"
+                className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-300"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="bg-green-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-green-600 transition-colors duration-300"
+              >
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
@@ -195,10 +236,18 @@ const LandingPage = () => {
         onViewportEnter={() => setKey((prev) => prev + 1)}
         transition={{ duration: 0.6 }}
         className="relative min-h-screen flex items-center justify-center bg-cover bg-center scroll-mt-20"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop')`,
-        }}
       >
+      {/* Video Background */}
+        <div className="absolute top-0 left-0 w-full h-full z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+            src="https://cdn.pixabay.com/video/2023/01/30/148596-794221551_large.mp4"
+          />
+        </div>
         {/* Static full overlay */}
         <div className="absolute inset-0 bg-white dark:bg-gray-900 bg-opacity-70 dark:bg-opacity-70 transition-colors duration-500" />
 

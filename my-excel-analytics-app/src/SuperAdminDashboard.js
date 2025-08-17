@@ -1,3 +1,5 @@
+import { useAuth } from './contexts/AuthContext';
+import { Link } from "react-router-dom";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   FaChartLine,
@@ -181,6 +183,8 @@ const EditUserModal = ({ isOpen, onClose, user, onUpdate }) => {
 //==========================================================
 
 const SuperAdminDashboard = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth(); // Get the logout function from context
   const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
   const [users, setUsers] = useState([]);
@@ -216,8 +220,6 @@ const SuperAdminDashboard = () => {
   const [modalAction, setModalAction] = useState(null);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [newUser, setNewUser] = useState({ fullname: "", email: "", role: "user", phoneNumber: "", employeeId: "" });
-
-  const navigate = useNavigate();
   const role = "super-admin";
 
   useEffect(() => {
@@ -556,11 +558,9 @@ const SuperAdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("token");
+    logout(); // This will clear the context state and localStorage
     navigate("/", { replace: true });
   };
-
   const handleSettingsChange = (e) => {
     const { name, value } = e.target;
     setGlobalSettings((prev) => ({ ...prev, [name]: value }));

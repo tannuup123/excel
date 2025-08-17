@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
 import LandingPage from "./LandingPage";
 import LoginPage from "./LoginPage";
 import RegistrationPage from "./RegistrationPage";
@@ -34,35 +35,37 @@ const App = () => {
   const shouldHideFooter = hideFooterRoutes.some(route => location.pathname.startsWith(route));
 
   return (
-    <>
-      <div className="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-300">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegistrationPage />} />
+    <AuthProvider>
+      <>
+        <div className="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegistrationPage />} />
 
-          {/* Protected Routes */}
-          <Route path="/" element={<PrivateRoute />}>
-            <Route path="/super-admin" element={<SuperAdminDashboard />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            <Route path="/user-dashboard" element={<UserDashboard />} />
-          </Route>
+            {/* Protected Routes */}
+            <Route path="/" element={<PrivateRoute />}>
+              <Route path="/super-admin" element={<SuperAdminDashboard />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/user-dashboard" element={<UserDashboard />} />
+            </Route>
 
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-          <Route path="/about-us" element={<AboutUsPage />} />
-          <Route path="/contact-us" element={<ContactUsPage />} />
-          <Route path="/careers" element={<CareersPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-          <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-          <Route path="/disclaimer" element={<DisclaimerPage />} />
-          <Route path="/features" element={<FeaturesPage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-        </Routes>
-      </div>
-      {!shouldHideFooter && <Footer />}
-    </>
+            <Route path="/about-us" element={<AboutUsPage />} />
+            <Route path="/contact-us" element={<ContactUsPage />} />
+            <Route path="/careers" element={<CareersPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+            <Route path="/disclaimer" element={<DisclaimerPage />} />
+            <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+          </Routes>
+        </div>
+        {!shouldHideFooter && <Footer />}
+      </>
+    </AuthProvider>
   );
 };
 
