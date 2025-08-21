@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const path = require('path'); 
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const path = require("path");
 require("dotenv").config();
 
 const verifyToken = require("./middleware/verifyToken");
@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // MongoDB Connection
 mongoose
@@ -37,7 +37,8 @@ mongoose
 // =================== PUBLIC ROUTES ===================
 app.post("/api/register", async (req, res) => {
   try {
-    const { fullname, email, password, role, phoneNumber, employeeId } = req.body;
+    const { fullname, email, password, role, phoneNumber, employeeId } =
+      req.body;
     const validRoles = ["user", "admin", "super-admin"];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ error: "Invalid role selected." });
@@ -162,7 +163,9 @@ app.post("/api/reset-password/:token", async (req, res) => {
       passwordResetExpires: { $gt: Date.now() },
     });
     if (!user) {
-      return res.status(400).json({ error: "Token is invalid or has expired." });
+      return res
+        .status(400)
+        .json({ error: "Token is invalid or has expired." });
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     user.password = hashedPassword;
