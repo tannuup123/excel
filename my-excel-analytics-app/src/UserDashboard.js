@@ -9,7 +9,7 @@ import Profile from './Profile';
 import {
   FaChartLine, FaTable, FaUser, FaSignOutAlt, FaUpload, FaRobot, FaInfoCircle,
   FaSun, FaMoon, FaChartPie, FaFilePdf, FaFileImage, FaSearch, FaTimes,
-  FaCheckCircle, FaExclamationTriangle
+  FaCheckCircle, FaExclamationTriangle, FaBars
 } from "react-icons/fa";
 import { Line, Bar, Pie } from "react-chartjs-2";
 import {
@@ -147,7 +147,9 @@ const UserDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
   const [viewingReport, setViewingReport] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar
 
+    
   useEffect(() => {
     const fetchUserDataAndFiles = async () => {
       const token = localStorage.getItem("token");
@@ -589,7 +591,6 @@ const UserDashboard = () => {
     const is2DChart = ['line', 'bar', 'pie'].includes(chartType);
     const is3DChart = chartType === '3d';
     
-    // This check prevents the crash.
     if ((is2DChart && !chartData.datasets) || (is3DChart && !Array.isArray(chartData))) {
         return placeholder("Switching chart type...");
     }
@@ -670,12 +671,12 @@ const UserDashboard = () => {
               <StatCard title="Last Active" value={dashboardStats.lastActive} icon={<FaUser size={24} />} />
             </div>
 
-            <div className="bg-white dark:bg-gray-800/50 p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700/50 mb-8">
+            <div className="bg-white dark:bg-gray-800/50 p-4 sm:p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700/50 mb-8">
               <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">New Analysis</h2>
 
               <label className="flex flex-col items-center justify-center space-y-4 p-8 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-green-500 dark:hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all cursor-pointer">
                 <FaUpload className="text-green-500 text-5xl" />
-                <span className="text-lg font-medium text-gray-600 dark:text-gray-300">{uploadedFileName ? `Loaded: ${uploadedFileName}` : "Drag & drop or click to upload"}</span>
+                <span className="text-lg font-medium text-gray-600 dark:text-gray-300 text-center">{uploadedFileName ? `Loaded: ${uploadedFileName}` : "Drag & drop or click to upload"}</span>
                 <p className="text-sm text-gray-400 dark:text-gray-500">{uploadedFileName ? "You can now select another file to replace it." : "Supported formats: .xls, .xlsx"}</p>
                 <input type="file" onChange={handleFileUpload} accept=".xls,.xlsx" className="hidden" />
               </label>
@@ -715,8 +716,8 @@ const UserDashboard = () => {
               )}
             </div>
 
-            <div className="bg-white dark:bg-gray-800/50 p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700/50 relative min-h-[500px]">
-              <div className="flex justify-between items-center mb-4">
+            <div className="bg-white dark:bg-gray-800/50 p-4 sm:p-8 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700/50 relative min-h-[500px]">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Your Data Visualization</h2>
                 {chartData && (
                   <div className="flex space-x-3">
@@ -742,9 +743,9 @@ const UserDashboard = () => {
 
         return (
           <>
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8 gap-4">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My Reports</h1>
-              <div className="w-1/3 relative">
+              <div className="w-full md:w-1/3 relative">
                 <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search reports..." className="w-full p-3 pl-10 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-green-500" />
                 <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               </div>
@@ -787,7 +788,7 @@ const UserDashboard = () => {
                           </ul>
                         )}
                       </div>
-                      <div className="flex space-x-2 mt-6">
+                      <div className="flex flex-col sm:flex-row sm:space-x-2 mt-6 gap-2">
                         <button onClick={() => loadFileFromHistory(file.fileId)} className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-center">
                           View Report
                         </button>
@@ -865,7 +866,17 @@ const UserDashboard = () => {
       {alert.show && (
         <CustomAlert message={alert.message} isSuccess={alert.type === 'success'} onClose={() => setAlert({ ...alert, show: false })} />
       )}
-      <aside className="w-72 bg-white dark:bg-gray-800 p-6 flex flex-col shadow-2xl border-r border-gray-200 dark:border-gray-700/50">
+      
+      {/* Overlay for mobile sidebar */}
+      {isSidebarOpen && (
+          <div
+              className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+          ></div>
+      )}
+
+      {/* Sidebar - Updated with responsive classes */}
+      <aside className={`fixed lg:static w-72 h-full bg-white dark:bg-gray-800 p-6 flex-col shadow-2xl border-r border-gray-200 dark:border-gray-700/50 transition-transform duration-300 ease-in-out z-40 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 flex`}>
         <div className="mb-12 flex items-center space-x-3">
           <motion.div animate={{ rotate: [0, 5, -5, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }} className="text-green-500">
             <FaChartPie size={40} />
@@ -876,13 +887,13 @@ const UserDashboard = () => {
         </div>
 
         <nav className="space-y-3">
-          <button onClick={() => setActiveTab("analytics")} className={`w-full p-3 rounded-lg font-semibold tracking-wide flex items-center transition-all duration-300 text-left ${activeTab === "analytics" ? "bg-green-500 text-white shadow-lg" : "hover:bg-green-100 dark:hover:bg-green-900/50 text-gray-700 dark:text-gray-300"}`}>
+          <button onClick={() => {setActiveTab("analytics"); setIsSidebarOpen(false);}} className={`w-full p-3 rounded-lg font-semibold tracking-wide flex items-center transition-all duration-300 text-left ${activeTab === "analytics" ? "bg-green-500 text-white shadow-lg" : "hover:bg-green-100 dark:hover:bg-green-900/50 text-gray-700 dark:text-gray-300"}`}>
             <FaChartLine className="mr-4" /> My Analytics
           </button>
-          <button onClick={() => setActiveTab("reports")} className={`w-full p-3 rounded-lg font-semibold tracking-wide flex items-center transition-all duration-300 text-left ${activeTab === "reports" ? "bg-green-500 text-white shadow-lg" : "hover:bg-green-100 dark:hover:bg-green-900/50 text-gray-700 dark:text-gray-300"}`}>
+          <button onClick={() => {setActiveTab("reports"); setIsSidebarOpen(false);}} className={`w-full p-3 rounded-lg font-semibold tracking-wide flex items-center transition-all duration-300 text-left ${activeTab === "reports" ? "bg-green-500 text-white shadow-lg" : "hover:bg-green-100 dark:hover:bg-green-900/50 text-gray-700 dark:text-gray-300"}`}>
             <FaTable className="mr-4" /> My Reports
           </button>
-          <button onClick={() => setActiveTab("profile")} className={`w-full p-3 rounded-lg font-semibold tracking-wide flex items-center transition-all duration-300 text-left ${activeTab === "profile" ? "bg-green-500 text-white shadow-lg" : "hover:bg-green-100 dark:hover:bg-green-900/50 text-gray-700 dark:text-gray-300"}`}>
+          <button onClick={() => {setActiveTab("profile"); setIsSidebarOpen(false);}} className={`w-full p-3 rounded-lg font-semibold tracking-wide flex items-center transition-all duration-300 text-left ${activeTab === "profile" ? "bg-green-500 text-white shadow-lg" : "hover:bg-green-100 dark:hover:bg-green-900/50 text-gray-700 dark:text-gray-300"}`}>
             <FaUser className="mr-4" /> Profile
           </button>
         </nav>
@@ -894,17 +905,29 @@ const UserDashboard = () => {
         </div>
       </aside>
 
-      <main className="flex-1 p-10 overflow-y-auto bg-gray-100 dark:bg-gray-900">
-        <header className="mb-10 pb-6 border-b border-gray-200 dark:border-gray-700/50 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Welcome, <span className="text-green-500">{user.fullname || "User"}</span>!</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">Here's your data at a glance. Let's uncover some insights!</p>
-          </div>
-          <button onClick={toggleDarkMode} className={`p-3 rounded-full shadow-md transition-colors duration-300 ${isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-gray-700/10 text-gray-600 hover:bg-gray-700/20"}`}>
-            {isDarkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
-          </button>
-        </header>
-        {renderContent()}
+      {/* Main Content - Updated to remove incorrect margin */}
+      <main className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900">
+         <div className="p-4 sm:p-10">
+            <header className="mb-10 pb-6 border-b border-gray-200 dark:border-gray-700/50 flex justify-between items-center">
+                <div className="flex items-center">
+                    {/* Hamburger Menu Button */}
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="lg:hidden p-2 mr-4 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+                    >
+                        <FaBars size={24} />
+                    </button>
+                    <div>
+                        <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-100">Welcome, <span className="text-green-500">{user.fullname || "User"}</span>!</h1>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm sm:text-base">Here's your data at a glance. Let's uncover some insights!</p>
+                    </div>
+                </div>
+                <button onClick={toggleDarkMode} className={`p-3 rounded-full shadow-md transition-colors duration-300 ${isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-gray-700/10 text-gray-600 hover:bg-gray-700/20"}`}>
+                    {isDarkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
+                </button>
+            </header>
+            {renderContent()}
+         </div>
       </main>
     </div>
   );

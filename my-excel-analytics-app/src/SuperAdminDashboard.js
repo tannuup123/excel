@@ -24,6 +24,7 @@ import {
   FaEnvelope,
   FaSun,
   FaMoon,
+  FaBars, // Hamburger Menu Icon
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { DarkModeContext } from './contexts/DarkModeContext';
@@ -176,7 +177,7 @@ const EditUserModal = ({ isOpen, onClose, user, onUpdate }) => {
         <option className="bg-white dark:bg-gray-800 text-black dark:text-white" value="super-admin">Super Admin</option>
       </select>
 
-      <div className="flex space-x-2">
+      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
         <button
           onClick={onClose}
           className="flex-1 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white font-bold py-2 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors duration-300 border border-gray-400 dark:border-gray-600 shadow-lg"
@@ -210,8 +211,9 @@ const SuperAdminDashboard = () => {
   const [mockFiles, setMockFiles] = useState([]);
   const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
   const [user, setUser] = useState({ fullname: "", email: "", role: "" });
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: "", type: "" });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for mobile sidebar
   const [globalSettings, setGlobalSettings] = useState({
     maxFileSize: 50,
     acceptedFormats: ".xlsx, .xls",
@@ -359,13 +361,11 @@ const SuperAdminDashboard = () => {
     return sortedUsers;
   }, [users, searchTerm, sortConfig]);
 
-  // 🆕 NEW: Function to handle opening the edit modal
   const handleOpenEditModal = (user) => {
     setUserToEdit(user);
     setIsEditUserModalOpen(true);
   };
   
-  // 🆕 UPDATED: Function to handle updating a user. This now just sets up the confirmation modal.
   const handleUpdateUser = (updatedUser) => {
     setIsEditUserModalOpen(false);
     setModalAction({
@@ -376,7 +376,6 @@ const SuperAdminDashboard = () => {
     setShowModal(true);
   };
 
-  // 🆕 NEW: Function to perform the confirmed user update API call
   const handleUpdateUserConfirmed = async (userToUpdate) => {
     const token = localStorage.getItem("token");
     try {
@@ -393,7 +392,7 @@ const SuperAdminDashboard = () => {
         fetchUsers();
         const messageBox = document.createElement('div');
         messageBox.innerText = `User '${userToUpdate.fullname}' updated successfully!`;
-        messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
+        messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up z-[10000]';
         document.body.appendChild(messageBox);
         setTimeout(() => {
           document.body.removeChild(messageBox);
@@ -495,7 +494,7 @@ const SuperAdminDashboard = () => {
         fetchUsers();
         const messageBox = document.createElement('div');
         messageBox.innerText = `New user '${newUser.fullname}' added successfully!`;
-        messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
+        messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up z-[10000]';
         document.body.appendChild(messageBox);
         setTimeout(() => {
           document.body.removeChild(messageBox);
@@ -557,7 +556,7 @@ const SuperAdminDashboard = () => {
           break;
 
         case 'confirm-update':
-          handleUpdateUserConfirmed(user); // Call the dedicated function for API request
+          handleUpdateUserConfirmed(user); 
           return;
 
         default:
@@ -587,7 +586,7 @@ const SuperAdminDashboard = () => {
         }
 
         messageBox.innerText = message;
-        messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
+        messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up z-[10000]';
         document.body.appendChild(messageBox);
         setTimeout(() => {
           document.body.removeChild(messageBox);
@@ -611,79 +610,63 @@ const SuperAdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    logout(); // This will clear the context state and localStorage
+    logout(); 
     navigate("/", { replace: true });
   };
   const handleSettingsChange = (e) => {
     const { name, value } = e.target;
     setGlobalSettings((prev) => ({ ...prev, [name]: value }));
   };
+    
+  const showSuccessMessage = (message) => {
+    const messageBox = document.createElement('div');
+    messageBox.innerText = message;
+    messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up z-[10000]';
+    document.body.appendChild(messageBox);
+    setTimeout(() => {
+        document.body.removeChild(messageBox);
+    }, 3000);
+  };
+
+  const showTemporaryMessage = (message, bgColor = 'bg-yellow-500') => {
+    const messageBox = document.createElement('div');
+    messageBox.innerText = message;
+    messageBox.className = `fixed bottom-4 right-4 ${bgColor} text-white p-4 rounded-lg shadow-xl animate-fade-in-up z-[10000]`;
+    document.body.appendChild(messageBox);
+    setTimeout(() => {
+        document.body.removeChild(messageBox);
+    }, 4000);
+};
 
   const handleSaveSettings = () => {
     console.log("Saving settings:", globalSettings);
-    const messageBox = document.createElement('div');
-    messageBox.innerText = 'Global settings saved successfully!';
-    messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
-    document.body.appendChild(messageBox);
-    setTimeout(() => {
-      document.body.removeChild(messageBox);
-    }, 3000);
+    showSuccessMessage('Global settings saved successfully!');
   };
 
   const handlePostAnnouncement = () => {
     console.log("Posting announcement:", announcement);
     setAnnouncement("");
-    const messageBox = document.createElement('div');
-    messageBox.innerText = 'Announcement posted successfully!';
-    messageBox.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
-    document.body.appendChild(messageBox);
-    setTimeout(() => {
-      document.body.removeChild(messageBox);
-    }, 3000);
+    showSuccessMessage('Announcement posted successfully!');
   };
 
   const handleRunDataCheck = () => {
     console.log("Running data integrity check...");
-    const messageBox = document.createElement('div');
-    messageBox.innerText = 'Data integrity check initiated. Results will be logged in audit logs.';
-    messageBox.className = 'fixed bottom-4 right-4 bg-yellow-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
-    document.body.appendChild(messageBox);
-    setTimeout(() => {
-      document.body.removeChild(messageBox);
-    }, 4000);
+    showTemporaryMessage('Data integrity check initiated. Results will be logged in audit logs.');
   };
 
   const handleArchiveOldData = () => {
     console.log("Archiving old data...");
-    const messageBox = document.createElement('div');
-    messageBox.innerText = 'Bulk archiving of old data initiated.';
-    messageBox.className = 'fixed bottom-4 right-4 bg-yellow-500 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
-    document.body.appendChild(messageBox);
-    setTimeout(() => {
-      document.body.removeChild(messageBox);
-    }, 4000);
+    showTemporaryMessage('Bulk archiving of old data initiated.');
   };
 
   const handleTriggerSecurityAlert = () => {
     console.log("Triggering a security alert...");
-    const messageBox = document.createElement('div');
-    messageBox.innerText = 'Security alert triggered. An incident report has been created.';
-    messageBox.className = 'fixed bottom-4 right-4 bg-red-600 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
-    document.body.appendChild(messageBox);
-    setTimeout(() => {
-      document.body.removeChild(messageBox);
-    }, 4000);
+    showTemporaryMessage('Security alert triggered. An incident report has been created.', 'bg-red-600');
   };
 
   const handleRunSystemBackup = () => {
     console.log("Running a full system backup...");
-    const messageBox = document.createElement('div');
-    messageBox.innerText = 'Full system backup initiated. This may take some time.';
-    messageBox.className = 'fixed bottom-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-xl animate-fade-in-up';
-    document.body.appendChild(messageBox);
-    setTimeout(() => {
-      document.body.removeChild(messageBox);
-    }, 4000);
+    showTemporaryMessage('Full system backup initiated. This may take some time.', 'bg-blue-600');
   };
 
   const renderSortIcon = (key) => {
@@ -697,7 +680,7 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-white to-gray-100 dark:from-gray-900 dark:to-black text-gray-700 dark:text-gray-300 font-sans overflow-hidden">
+    <div className="relative flex h-screen bg-gradient-to-br from-white to-gray-100 dark:from-gray-900 dark:to-black text-gray-700 dark:text-gray-300 font-sans overflow-hidden">
   <style>
     {`
       @keyframes fadeInOutUp {
@@ -711,6 +694,14 @@ const SuperAdminDashboard = () => {
       }
     `}
   </style>
+
+  {/* Overlay for mobile sidebar */}
+  {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+   )}
 
   {/* Confirmation & Modals */}
   <ConfirmationModal
@@ -734,7 +725,7 @@ const SuperAdminDashboard = () => {
   />
 
   {/* Sidebar */}
-  <aside className="w-64 bg-white/40 dark:bg-gray-900/60 backdrop-blur-md border-r border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center shadow-lg">
+  <aside className={`fixed top-0 left-0 h-full w-64 bg-white/40 dark:bg-gray-900/60 backdrop-blur-md border-r border-gray-200 dark:border-gray-700 p-6 flex flex-col items-center shadow-lg transform transition-transform duration-300 ease-in-out z-40 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 lg:fixed`}>
     <div className="flex flex-col items-center space-y-2 mb-12 text-center">
       <div className="bg-red-600 p-3 rounded-full shadow-lg border border-red-600 text-white">
         <FaUserShield size={26} />
@@ -755,7 +746,10 @@ const SuperAdminDashboard = () => {
       ].map((item) => (
         <button
           key={item.id}
-          onClick={() => setActiveSection(item.id)}
+          onClick={() => {
+            setActiveSection(item.id);
+            setIsSidebarOpen(false); // Close sidebar on selection
+          }}
           className={`flex items-center space-x-3 p-3 rounded-xl transition-all duration-300 font-semibold ${
             activeSection === item.id
               ? "bg-red-600 text-white shadow-xl border border-red-500"
@@ -780,23 +774,28 @@ const SuperAdminDashboard = () => {
   </aside>
 
   {/* Main Content */}
-  <main className="flex-1 p-8 overflow-y-auto">
+  <main className="flex-1 p-4 sm:p-8 overflow-y-auto transition-all duration-300 lg:ml-64">
     <header className="mb-10 pb-6 border-b border-gray-200 dark:border-gray-700/50 flex justify-between items-center">
-                      <div>
-                        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Welcome, <span className="text-red-500">{user.fullname || "User"}</span> !</h1>
-                       
-                      </div>
-                      <button onClick={toggleDarkMode} className={`p-3 rounded-full shadow-md transition-colors duration-300 ${isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-gray-700/10 text-gray-600 hover:bg-gray-700/20"}`}>
-                        {isDarkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
-                      </button>
-                    </header>
+        <div className="flex items-center">
+            {/* Hamburger Menu Button - visible only on smaller screens */}
+            <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="lg:hidden text-gray-600 dark:text-gray-300 mr-4 p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+            <FaBars size={24} />
+            </button>
+            <div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-100">Welcome, <span className="text-red-500">{user.fullname || "User"}</span>!</h1>
+            </div>
+        </div>
+        <button onClick={toggleDarkMode} className={`p-3 rounded-full shadow-md transition-colors duration-300 ${isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-gray-700/10 text-gray-600 hover:bg-gray-700/20"}`}>
+            {isDarkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
+        </button>
+    </header>
+
     {activeSection === "dashboard" && (
       <>
-        <header className="mb-8 border-b border-red-600 pb-2">
-          <h1 className="text-3xl font-bold text-red-600 dark:text-red-400">Super Admin Dashboard</h1>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
           {[
             { title: "Registered Users", value: usageStats.totalUsers },
             { title: "Total Files Uploaded", value: usageStats.totalFiles },
@@ -824,381 +823,385 @@ const SuperAdminDashboard = () => {
       </>
     )}
 
-        {activeSection === "manage-users" && (
-  <div className="bg-white/10 dark:bg-gray-900/50 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 overflow-x-auto border border-gray-300 dark:border-white/20">
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-xl font-bold text-red-600 dark:text-red-400">
-        All Registered Users
-      </h2>
-      <div className="flex items-center space-x-2">
-        <button
-          onClick={() => setIsAddUserModalOpen(true)}
-          className="bg-green-600 dark:bg-green-500 text-white font-bold p-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-300 border border-green-500/50 flex items-center space-x-2"
-        >
-          <FaPlus />
-          <span>Add User</span>
-        </button>
-        <input
-          type="text"
-          placeholder="Search users..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 p-2 rounded-lg border border-gray-300 dark:border-white/20"
-        />
-      </div>
-    </div>
-
-    <table className="min-w-full divide-y divide-gray-300 dark:divide-white/20">
-      <thead>
-        <tr className="text-gray-700 dark:text-gray-200">
-          <th
-            className="px-6 py-3 text-left cursor-pointer"
-            onClick={() => requestSort("fullname")}
-          >
-            <div className="flex items-center space-x-1">
-              <span>Full Name</span>
-              {renderSortIcon("fullname")}
-            </div>
-          </th>
-          <th
-            className="px-6 py-3 text-left cursor-pointer"
-            onClick={() => requestSort("email")}
-          >
-            <div className="flex items-center space-x-1">
-              <span>Email</span>
-              {renderSortIcon("email")}
-            </div>
-          </th>
-          <th
-            className="px-6 py-3 text-left cursor-pointer"
-            onClick={() => requestSort("role")}
-          >
-            <div className="flex items-center space-x-1">
-              <span>Role</span>
-              {renderSortIcon("role")}
-            </div>
-          </th>
-          <th
-            className="px-6 py-3 text-center cursor-pointer"
-            onClick={() => requestSort("isApproved")}
-          >
-            <div className="flex items-center justify-center space-x-1">
-              <span>Approved</span>
-              {renderSortIcon("isApproved")}
-            </div>
-          </th>
-          <th
-            className="px-6 py-3 text-left cursor-pointer"
-            onClick={() => requestSort("createdAt")}
-          >
-            <div className="flex items-center space-x-1">
-              <span>Joined</span>
-              {renderSortIcon("createdAt")}
-            </div>
-          </th>
-          <th className="px-6 py-3 text-center">Actions</th>
-        </tr>
-      </thead>
-
-      <tbody className="text-gray-800 dark:text-gray-300">
-        {sortedAndFilteredUsers.map((u) => (
-          <tr
-            key={u._id}
-            className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
-          >
-            <td className="px-6 py-4 align-middle">{u.fullname}</td>
-            <td className="px-6 py-4 align-middle">{u.email}</td>
-            <td className="px-6 py-4 align-middle">
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  u.role === "super-admin"
-                    ? "bg-red-600 text-white"
-                    : u.role === "admin"
-                    ? "bg-indigo-600 text-white"
-                    : "bg-green-600 text-white"
-                }`}
-              >
-                {u.role}
-              </span>
-            </td>
-            <td className="px-6 py-4 align-middle text-center">
-              <input
-                type="checkbox"
-                checked={u.isApproved}
-                onChange={() => handleApprovalChange(u._id, !u.isApproved)}
-                className="form-checkbox h-5 w-5 text-blue-600 border-gray-400 dark:border-gray-600 focus:ring-blue-500"
-              />
-            </td>
-            <td className="px-6 py-4 align-middle">
-              {new Date(u.createdAt).toLocaleDateString()}
-            </td>
-            <td className="px-6 py-4 align-middle">
-              <div className="flex justify-center items-center space-x-2">
-                <select
-                  value={u.role}
-                  onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                  className="bg-white dark:bg-gray-800 dark:text-white text-gray-900 p-1 rounded-lg border border-gray-300 dark:border-white/20"
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                  <option value="super-admin">Super Admin</option>
-                </select>
-                <button
-                  onClick={() => handleDeleteUser(u._id)}
-                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 p-2 rounded-lg"
-                  title="Delete User"
-                >
-                  <FaTrash />
-                </button>
-                <button
-                  onClick={() => handleRequestPasswordReset(u.email)}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 p-2 rounded-lg"
-                  title="Reset Password"
-                >
-                  <FaEnvelope />
-                </button>
-                <button
-                  onClick={() => handleOpenEditModal(u)}
-                  className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white p-2 rounded-lg"
-                  title="Edit User"
-                >
-                  <FaCog />
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
-
-
-       {activeSection === "file-oversight" && (
-  <div className="bg-white/10 dark:bg-gray-900/40 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 overflow-x-auto border border-gray-200/30 dark:border-white/20">
-    <h2 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">
-      Data & File Oversight
-    </h2>
-    <p className="mb-4 text-gray-600 dark:text-gray-300">
-      Manage and monitor all uploaded files and system logs across the platform.
-    </p>
-
-    {/* === File Management === */}
-    <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">
-      File Management
-    </h3>
-    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 mb-8">
-      <thead className="bg-gray-100 dark:bg-gray-800/60">
-        <tr>
-          <th className="px-6 py-3 text-left font-semibold text-red-600 dark:text-red-400">File Name</th>
-          <th className="px-6 py-3 text-left font-semibold text-red-600 dark:text-red-400">Owner</th>
-          <th className="px-6 py-3 text-left font-semibold text-red-600 dark:text-red-400">Upload Date</th>
-          <th className="px-6 py-3 text-center font-semibold text-red-600 dark:text-red-400">Actions</th>
-        </tr>
-      </thead>
-
-      <tbody className="text-gray-700 dark:text-gray-300">
-        {mockFiles.map((file) => (
-          <tr
-            key={file.id}
-            className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-200"
-          >
-            <td className="px-6 py-4 align-middle">{file.name}</td>
-            <td className="px-6 py-4 align-middle">{file.owner}</td>
-            <td className="px-6 py-4 align-middle">{file.date}</td>
-            <td className="px-6 py-4 align-middle">
-              <div className="flex justify-center items-center">
-                <button
-                  className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200"
-                  title="Delete File"
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-
-    {/* === Audit Logs === */}
-    <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">
-      Audit Logs
-    </h3>
-    <div className="h-64 overflow-y-auto bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-      {auditLogs.map(log => (
-        <div key={log.id} className="mb-2 text-sm text-gray-700 dark:text-gray-300">
-          <span className="text-red-500 dark:text-red-400 mr-2">
-            [{new Date(log.timestamp).toLocaleTimeString()}]
-          </span>
-          <span className="font-semibold text-gray-900 dark:text-white mr-1">{log.user}:</span>
-          <span className="text-gray-600 dark:text-gray-400">{log.details}</span>
+    {activeSection === "manage-users" && (
+    <div className="bg-white/10 dark:bg-gray-900/50 backdrop-blur-md p-4 sm:p-6 rounded-2xl shadow-xl mb-8 border border-gray-300 dark:border-white/20">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-4">
+        <h2 className="text-xl font-bold text-red-600 dark:text-red-400">
+            All Registered Users
+        </h2>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <button
+            onClick={() => setIsAddUserModalOpen(true)}
+            className="bg-green-600 dark:bg-green-500 text-white font-bold p-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-300 border border-green-500/50 flex items-center justify-center space-x-2"
+            >
+            <FaPlus />
+            <span>Add User</span>
+            </button>
+            <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 p-2 rounded-lg border border-gray-300 dark:border-white/20 w-full sm:w-auto"
+            />
         </div>
-      ))}
+        </div>
+
+        <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-300 dark:divide-white/20">
+            <thead>
+            <tr className="text-gray-700 dark:text-gray-200">
+                <th
+                className="px-6 py-3 text-left cursor-pointer"
+                onClick={() => requestSort("fullname")}
+                >
+                <div className="flex items-center space-x-1">
+                    <span>Full Name</span>
+                    {renderSortIcon("fullname")}
+                </div>
+                </th>
+                <th
+                className="px-6 py-3 text-left cursor-pointer"
+                onClick={() => requestSort("email")}
+                >
+                <div className="flex items-center space-x-1">
+                    <span>Email</span>
+                    {renderSortIcon("email")}
+                </div>
+                </th>
+                <th
+                className="px-6 py-3 text-left cursor-pointer"
+                onClick={() => requestSort("role")}
+                >
+                <div className="flex items-center space-x-1">
+                    <span>Role</span>
+                    {renderSortIcon("role")}
+                </div>
+                </th>
+                <th
+                className="px-6 py-3 text-center cursor-pointer"
+                onClick={() => requestSort("isApproved")}
+                >
+                <div className="flex items-center justify-center space-x-1">
+                    <span>Approved</span>
+                    {renderSortIcon("isApproved")}
+                </div>
+                </th>
+                <th
+                className="px-6 py-3 text-left cursor-pointer"
+                onClick={() => requestSort("createdAt")}
+                >
+                <div className="flex items-center space-x-1">
+                    <span>Joined</span>
+                    {renderSortIcon("createdAt")}
+                </div>
+                </th>
+                <th className="px-6 py-3 text-center">Actions</th>
+            </tr>
+            </thead>
+
+            <tbody className="text-gray-800 dark:text-gray-300">
+            {sortedAndFilteredUsers.map((u) => (
+                <tr
+                key={u._id}
+                className="hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                >
+                <td className="px-6 py-4 align-middle">{u.fullname}</td>
+                <td className="px-6 py-4 align-middle">{u.email}</td>
+                <td className="px-6 py-4 align-middle">
+                    <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        u.role === "super-admin"
+                        ? "bg-red-600 text-white"
+                        : u.role === "admin"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-green-600 text-white"
+                    }`}
+                    >
+                    {u.role}
+                    </span>
+                </td>
+                <td className="px-6 py-4 align-middle text-center">
+                    <input
+                    type="checkbox"
+                    checked={u.isApproved}
+                    onChange={() => handleApprovalChange(u._id, !u.isApproved)}
+                    className="form-checkbox h-5 w-5 text-blue-600 border-gray-400 dark:border-gray-600 focus:ring-blue-500"
+                    />
+                </td>
+                <td className="px-6 py-4 align-middle">
+                    {new Date(u.createdAt).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4 align-middle">
+                    <div className="flex justify-center items-center space-x-2">
+                    <select
+                        value={u.role}
+                        onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                        className="bg-white dark:bg-gray-800 dark:text-white text-gray-900 p-1 rounded-lg border border-gray-300 dark:border-white/20"
+                    >
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="super-admin">Super Admin</option>
+                    </select>
+                    <button
+                        onClick={() => handleDeleteUser(u._id)}
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-500 p-2 rounded-lg"
+                        title="Delete User"
+                    >
+                        <FaTrash />
+                    </button>
+                    <button
+                        onClick={() => handleRequestPasswordReset(u.email)}
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-500 p-2 rounded-lg"
+                        title="Reset Password"
+                    >
+                        <FaEnvelope />
+                    </button>
+                    <button
+                        onClick={() => handleOpenEditModal(u)}
+                        className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white p-2 rounded-lg"
+                        title="Edit User"
+                    >
+                        <FaCog />
+                    </button>
+                    </div>
+                </td>
+                </tr>
+            ))}
+            </tbody>
+        </table>
+        </div>
     </div>
+    )}
 
-    {/* === Data Health === */}
-    <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mt-6 mb-2">
-      Data Health
-    </h3>
-    <div className="flex space-x-4">
-      <button
-        onClick={handleRunDataCheck}
-        className="flex-1 bg-red-600 dark:bg-red-500 text-white font-bold py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-400 transition-colors duration-300 border border-yellow-500/50 shadow-lg"
-      >
-        <FaCheck className="inline mr-2" />
-        Run Data Integrity Check
-      </button>
-      <button
-        onClick={handleArchiveOldData}
-        className="flex-1 bg-green-600 dark:bg-green-500 text-white font-bold py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-400 transition-colors duration-300 border border-purple-500/50 shadow-lg"
-      >
-        <FaArchive className="inline mr-2" />
-        Archive Old Files
-      </button>
-    </div>
-  </div>
-)}
 
-        {activeSection === "system-health" && (
-  <>
-    <h2 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">
-      System Performance and Health
-    </h2>
-
-    {/* Server & DB Status */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <div className="bg-gray-100 dark:bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-white/20 transition-colors">
-        <h3 className="text-red-600 dark:text-red-400 font-bold">Server Load</h3>
-        <p className="text-4xl font-bold mt-2 text-gray-800 dark:text-white">
-          {systemHealth.serverLoad}
+    {activeSection === "file-oversight" && (
+    <div className="bg-white/10 dark:bg-gray-900/40 backdrop-blur-md p-4 sm:p-6 rounded-2xl shadow-xl mb-8 border border-gray-200/30 dark:border-white/20">
+        <h2 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">
+        Data & File Oversight
+        </h2>
+        <p className="mb-4 text-gray-600 dark:text-gray-300">
+        Manage and monitor all uploaded files and system logs across the platform.
         </p>
-      </div>
-      <div className="bg-gray-100 dark:bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-white/20 transition-colors">
-        <h3 className="text-red-600 dark:text-red-400 font-bold">Database Status</h3>
-        <p className="text-4xl font-bold mt-2 text-gray-800 dark:text-white">
-          {systemHealth.databaseStatus}
+
+        {/* === File Management === */}
+        <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">
+        File Management
+        </h3>
+        <div className="overflow-x-auto mb-8">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-100 dark:bg-gray-800/60">
+            <tr>
+                <th className="px-6 py-3 text-left font-semibold text-red-600 dark:text-red-400">File Name</th>
+                <th className="px-6 py-3 text-left font-semibold text-red-600 dark:text-red-400">Owner</th>
+                <th className="px-6 py-3 text-left font-semibold text-red-600 dark:text-red-400">Upload Date</th>
+                <th className="px-6 py-3 text-center font-semibold text-red-600 dark:text-red-400">Actions</th>
+            </tr>
+            </thead>
+
+            <tbody className="text-gray-700 dark:text-gray-300">
+            {mockFiles.map((file) => (
+                <tr
+                key={file.id}
+                className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-200"
+                >
+                <td className="px-6 py-4 align-middle">{file.name}</td>
+                <td className="px-6 py-4 align-middle">{file.owner}</td>
+                <td className="px-6 py-4 align-middle">{file.date}</td>
+                <td className="px-6 py-4 align-middle">
+                    <div className="flex justify-center items-center">
+                    <button
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200"
+                        title="Delete File"
+                    >
+                        <FaTrash />
+                    </button>
+                    </div>
+                </td>
+                </tr>
+            ))}
+            </tbody>
+        </table>
+        </div>
+
+        {/* === Audit Logs === */}
+        <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mb-2">
+        Audit Logs
+        </h3>
+        <div className="h-64 overflow-y-auto bg-gray-50 dark:bg-gray-800/40 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+        {auditLogs.map(log => (
+            <div key={log.id} className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-red-500 dark:text-red-400 mr-2">
+                [{new Date(log.timestamp).toLocaleTimeString()}]
+            </span>
+            <span className="font-semibold text-gray-900 dark:text-white mr-1">{log.user}:</span>
+            <span className="text-gray-600 dark:text-gray-400">{log.details}</span>
+            </div>
+        ))}
+        </div>
+
+        {/* === Data Health === */}
+        <h3 className="text-lg font-bold text-red-600 dark:text-red-400 mt-6 mb-2">
+        Data Health
+        </h3>
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+        <button
+            onClick={handleRunDataCheck}
+            className="flex-1 bg-red-600 dark:bg-red-500 text-white font-bold py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-400 transition-colors duration-300 border border-yellow-500/50 shadow-lg"
+        >
+            <FaCheck className="inline mr-2" />
+            Run Data Integrity Check
+        </button>
+        <button
+            onClick={handleArchiveOldData}
+            className="flex-1 bg-green-600 dark:bg-green-500 text-white font-bold py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-400 transition-colors duration-300 border border-purple-500/50 shadow-lg"
+        >
+            <FaArchive className="inline mr-2" />
+            Archive Old Files
+        </button>
+        </div>
+    </div>
+    )}
+
+    {activeSection === "system-health" && (
+    <>
+        <h2 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">
+        System Performance and Health
+        </h2>
+
+        {/* Server & DB Status */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-gray-100 dark:bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-white/20 transition-colors">
+            <h3 className="text-red-600 dark:text-red-400 font-bold">Server Load</h3>
+            <p className="text-4xl font-bold mt-2 text-gray-800 dark:text-white">
+            {systemHealth.serverLoad}
+            </p>
+        </div>
+        <div className="bg-gray-100 dark:bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-white/20 transition-colors">
+            <h3 className="text-red-600 dark:text-red-400 font-bold">Database Status</h3>
+            <p className="text-4xl font-bold mt-2 text-gray-800 dark:text-white">
+            {systemHealth.databaseStatus}
+            </p>
+        </div>
+        </div>
+
+        {/* Error Logs */}
+        <div className="bg-gray-100 dark:bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 border border-gray-200 dark:border-white/20 transition-colors">
+        <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Error Logs</h3>
+        <div className="h-40 overflow-y-auto bg-gray-50 dark:bg-white/5 p-4 rounded-lg border border-gray-200 dark:border-white/10 transition-colors">
+            <div className="flex items-center space-x-2 text-yellow-600 dark:text-yellow-400 mb-2">
+            <FaExclamationTriangle />
+            <span>[10:25 AM] User "user@example.com" attempted to delete file.</span>
+            </div>
+            <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 mb-2">
+            <FaTimes />
+            <span>[10:20 AM] API call to `/api/reports` failed with status 500.</span>
+            </div>
+            <div className="flex items-center space-x-2 text-green-600 dark:text-green-400 mb-2">
+            <FaCheck />
+            <span>[10:15 AM] Database connection successful.</span>
+            </div>
+        </div>
+        </div>
+
+        {/* Security & Backup */}
+        <div className="bg-gray-100 dark:bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-white/20 transition-colors">
+        <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Security & Backup</h3>
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <button
+            onClick={handleTriggerSecurityAlert}
+            className="flex-1 bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-red-500/50 shadow-lg"
+            title="Trigger Security Alert"
+            >
+            <FaLock className="inline mr-2" />
+            Trigger Security Alert
+            </button>
+            <button
+            onClick={handleRunSystemBackup}
+            className="flex-1 bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 border border-blue-500/50 shadow-lg"
+            title="Run Full System Backup"
+            >
+            <FaCloudDownloadAlt className="inline mr-2" />
+            Run Full System Backup
+            </button>
+        </div>
+        </div>
+    </>
+    )}
+
+
+    {activeSection === "settings" && (
+    <div className="bg-white/10 dark:bg-gray-800/40 backdrop-blur-md p-4 sm:p-6 rounded-2xl shadow-xl mb-8 border border-white/20 dark:border-gray-700/50 transition-colors duration-300">
+        <h2 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Global System Settings</h2>
+
+        <div className="space-y-4">
+        <div>
+            <label className="block text-red-600 dark:text-red-400">Max File Size (MB)</label>
+            <input
+            type="number"
+            name="maxFileSize"
+            value={globalSettings.maxFileSize}
+            onChange={handleSettingsChange}
+            className="w-full bg-white/10 dark:bg-gray-900/40 p-2 rounded-lg mt-1 text-gray-700 dark:text-gray-100 border border-white/20 dark:border-gray-700/50 placeholder-gray-500 dark:placeholder-gray-400"
+            />
+        </div>
+        <div>
+            <label className="block text-red-600 dark:text-red-400">Accepted File Formats</label>
+            <input
+            type="text"
+            name="acceptedFormats"
+            value={globalSettings.acceptedFormats}
+            onChange={handleSettingsChange}
+            className="w-full bg-white/10 dark:bg-gray-900/40 p-2 rounded-lg mt-1 text-gray-700 dark:text-gray-100 border border-white/20 dark:border-gray-700/50 placeholder-gray-500 dark:placeholder-gray-400"
+            />
+        </div>
+        <div>
+            <label className="block text-red-600 dark:text-red-400">Data Retention Policy</label>
+            <input
+            type="text"
+            name="dataRetentionPolicy"
+            value={globalSettings.dataRetentionPolicy}
+            onChange={handleSettingsChange}
+            className="w-full bg-white/10 dark:bg-gray-900/40 p-2 rounded-lg mt-1 text-gray-700 dark:text-gray-100 border border-white/20 dark:border-gray-700/50 placeholder-gray-500 dark:placeholder-gray-400"
+            />
+        </div>
+        <button
+            onClick={handleSaveSettings}
+            className="w-full bg-red-600 dark:bg-red-500 text-white font-bold py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-300 border border-red-500/50 shadow-lg"
+        >
+            Save Settings
+        </button>
+        </div>
+
+        {/* Platform Announcements */}
+        <div className="mt-8 border-t border-white/20 dark:border-gray-700/50 pt-6">
+        <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Platform Announcements</h3>
+        <textarea
+            value={announcement}
+            onChange={(e) => setAnnouncement(e.target.value)}
+            placeholder="Write your announcement here..."
+            className="w-full h-24 bg-white/10 dark:bg-gray-900/40 p-2 rounded-lg text-gray-700 dark:text-gray-100 border border-white/20 dark:border-gray-700/50 placeholder-gray-600 dark:placeholder-gray-400"
+        ></textarea>
+        <button
+            onClick={handlePostAnnouncement}
+            className="mt-4 w-full bg-green-600 dark:bg-green-500 text-white font-bold py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-300 border border-green-500/50 shadow-lg"
+        >
+            <FaBullhorn className="inline mr-2" />
+            Post Announcement
+        </button>
+        </div>
+
+        {/* Integration Management */}
+        <div className="mt-8 border-t border-white/20 dark:border-gray-700/50 pt-6">
+        <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Integration Management</h3>
+        <p className="text-gray-700 dark:text-gray-300">
+            This section would allow for the configuration of third-party services like cloud storage or payment gateways.
         </p>
-      </div>
-    </div>
-
-    {/* Error Logs */}
-    <div className="bg-gray-100 dark:bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 border border-gray-200 dark:border-white/20 transition-colors">
-      <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Error Logs</h3>
-      <div className="h-40 overflow-y-auto bg-gray-50 dark:bg-white/5 p-4 rounded-lg border border-gray-200 dark:border-white/10 transition-colors">
-        <div className="flex items-center space-x-2 text-yellow-600 dark:text-yellow-400 mb-2">
-          <FaExclamationTriangle />
-          <span>[10:25 AM] User "user@example.com" attempted to delete file.</span>
         </div>
-        <div className="flex items-center space-x-2 text-red-600 dark:text-red-400 mb-2">
-          <FaTimes />
-          <span>[10:20 AM] API call to `/api/reports` failed with status 500.</span>
-        </div>
-        <div className="flex items-center space-x-2 text-green-600 dark:text-green-400 mb-2">
-          <FaCheck />
-          <span>[10:15 AM] Database connection successful.</span>
-        </div>
-      </div>
     </div>
+    )}
 
-    {/* Security & Backup */}
-    <div className="bg-gray-100 dark:bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-white/20 transition-colors">
-      <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Security & Backup</h3>
-      <div className="flex space-x-4">
-        <button
-          onClick={handleTriggerSecurityAlert}
-          className="flex-1 bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700 transition-colors duration-300 border border-red-500/50 shadow-lg"
-          title="Trigger Security Alert"
-        >
-          <FaLock className="inline mr-2" />
-          Trigger Security Alert
-        </button>
-        <button
-          onClick={handleRunSystemBackup}
-          className="flex-1 bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition-colors duration-300 border border-blue-500/50 shadow-lg"
-          title="Run Full System Backup"
-        >
-          <FaCloudDownloadAlt className="inline mr-2" />
-          Run Full System Backup
-        </button>
-      </div>
-    </div>
-  </>
-)}
-
-
-        {activeSection === "settings" && (
-  <div className="bg-white/10 dark:bg-gray-800/40 backdrop-blur-md p-6 rounded-2xl shadow-xl mb-8 border border-white/20 dark:border-gray-700/50 transition-colors duration-300">
-    <h2 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Global System Settings</h2>
-
-    <div className="space-y-4">
-      <div>
-        <label className="block text-red-600 dark:text-red-400">Max File Size (MB)</label>
-        <input
-          type="number"
-          name="maxFileSize"
-          value={globalSettings.maxFileSize}
-          onChange={handleSettingsChange}
-          className="w-full bg-white/10 dark:bg-gray-900/40 p-2 rounded-lg mt-1 text-gray-700 dark:text-gray-100 border border-white/20 dark:border-gray-700/50 placeholder-gray-500 dark:placeholder-gray-400"
-        />
-      </div>
-      <div>
-        <label className="block text-red-600 dark:text-red-400">Accepted File Formats</label>
-        <input
-          type="text"
-          name="acceptedFormats"
-          value={globalSettings.acceptedFormats}
-          onChange={handleSettingsChange}
-          className="w-full bg-white/10 dark:bg-gray-900/40 p-2 rounded-lg mt-1 text-gray-700 dark:text-gray-100 border border-white/20 dark:border-gray-700/50 placeholder-gray-500 dark:placeholder-gray-400"
-        />
-      </div>
-      <div>
-        <label className="block text-red-600 dark:text-red-400">Data Retention Policy</label>
-        <input
-          type="text"
-          name="dataRetentionPolicy"
-          value={globalSettings.dataRetentionPolicy}
-          onChange={handleSettingsChange}
-          className="w-full bg-white/10 dark:bg-gray-900/40 p-2 rounded-lg mt-1 text-gray-700 dark:text-gray-100 border border-white/20 dark:border-gray-700/50 placeholder-gray-500 dark:placeholder-gray-400"
-        />
-      </div>
-      <button
-        onClick={handleSaveSettings}
-        className="w-full bg-red-600 dark:bg-red-500 text-white font-bold py-2 rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-colors duration-300 border border-red-500/50 shadow-lg"
-      >
-        Save Settings
-      </button>
-    </div>
-
-    {/* Platform Announcements */}
-    <div className="mt-8 border-t border-white/20 dark:border-gray-700/50 pt-6">
-      <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Platform Announcements</h3>
-      <textarea
-        value={announcement}
-        onChange={(e) => setAnnouncement(e.target.value)}
-        placeholder="Write your announcement here..."
-        className="w-full h-24 bg-white/10 dark:bg-gray-900/40 p-2 rounded-lg text-gray-700 dark:text-gray-100 border border-white/20 dark:border-gray-700/50 placeholder-gray-600 dark:placeholder-gray-400"
-      ></textarea>
-      <button
-        onClick={handlePostAnnouncement}
-        className="mt-4 w-full bg-green-600 dark:bg-green-500 text-white font-bold py-2 rounded-lg hover:bg-green-700 dark:hover:bg-green-600 transition-colors duration-300 border border-green-500/50 shadow-lg"
-      >
-        <FaBullhorn className="inline mr-2" />
-        Post Announcement
-      </button>
-    </div>
-
-    {/* Integration Management */}
-    <div className="mt-8 border-t border-white/20 dark:border-gray-700/50 pt-6">
-      <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400">Integration Management</h3>
-      <p className="text-gray-700 dark:text-gray-300">
-        This section would allow for the configuration of third-party services like cloud storage or payment gateways.
-      </p>
-    </div>
-  </div>
-)}
-
-      </main>
+    </main>
     </div>
   );
 };
