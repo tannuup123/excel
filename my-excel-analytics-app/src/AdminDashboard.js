@@ -1,9 +1,10 @@
 import { useAuth } from "./contexts/AuthContext";
 import { Link } from "react-router-dom";
-import React, { useState, useEffect } from "react";
-import { FaChartLine, FaUsers, FaSignOutAlt, FaTrash } from "react-icons/fa";
+import React, { useState, useEffect, useContext } from "react";
+import { FaSun, FaMoon, FaUsers, FaSignOutAlt, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { BarChart3 } from "lucide-react";
+import { DarkModeContext } from './contexts/DarkModeContext';
 import {
   ArrowUpOnSquareIcon,
   UserGroupIcon,
@@ -91,6 +92,7 @@ const AdminDashboard = () => {
   const [allUsers, setAllUsers] = useState([]); // not null or {}
   const [alert, setAlert] = useState({ show: false, message: "", type: "" });
   const [editMode, setEditMode] = useState(false);
+  const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
   const [editUser, setEditUser] = useState({
     fullname: "",
     email: "",
@@ -281,66 +283,78 @@ const AdminDashboard = () => {
   return (
     <div className="flex h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-white transition-colors duration-500">
       {/* Sidebar */}
-      <aside className="w-64 bg-gradient-to-r from-blue-50 to-indigo-100 p-6 flex flex-col shadow-xl transition-all duration-500">
-        <div className="mb-12 text-center">
-          <FaUsers
-            size={36}
-            className="text-blue-600 dark:text-blue-300 drop-shadow-md mx-auto"
-          />
-          <p className="text-2xl font-bold mt-2 tracking-wide">Admin Panel</p>
-          <span className="px-3 py-1 mt-2 inline-block bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-200 rounded-full text-sm shadow-md">
-            {role.toUpperCase()}
-          </span>
-        </div>
+      <aside className="w-64 bg-gradient-to-r from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-6 flex flex-col shadow-xl transition-all duration-500">
 
-        <nav className="space-y-2">
-          <button
-            onClick={() => setActiveSection("dashboard")}
-            className={`w-full p-3 rounded-lg font-medium flex items-center justify-center ${
-              activeSection === "dashboard"
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105"
-                : "bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-200 hover:bg-blue-400 hover:text-white"
-            } transition-all duration-300 ease-in-out`}
-          >
-            Dashboard
-          </button>
+  <div className="mb-12 text-center">
+    <FaUsers
+      size={36}
+      className="text-blue-600 dark:text-blue-300 drop-shadow-md mx-auto"
+    />
+    <p className="text-2xl font-bold mt-2 tracking-wide text-gray-900 dark:text-gray-100">
+      Admin Panel
+    </p>
+    <span className="px-3 py-1 mt-2 inline-block bg-blue-200 dark:bg-blue-700 text-blue-900 dark:text-blue-200 rounded-full text-sm shadow-md">
+      {role.toUpperCase()}
+    </span>
+  </div>
 
-          <button
-            onClick={() => setActiveSection("manage-users")}
-            className={`w-full p-3 rounded-lg font-medium flex items-center justify-center ${
-              activeSection === "manage-users"
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105"
-                : "bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-200 hover:bg-blue-400 hover:text-white"
-            } transition-all duration-300 ease-in-out`}
-          >
-            Manage Users
-          </button>
-          <button
-            onClick={() => setActiveSection("profile")}
-            className={`w-full p-3 rounded-lg font-medium flex items-center justify-center ${
-              activeSection === "profile"
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105"
-                : "bg-blue-200 dark:bg-blue-800 text-blue-900 dark:text-blue-200 hover:bg-blue-400 hover:text-white"
-            } transition-all duration-300 ease-in-out`}
-          >
-            Profile
-          </button>
-        </nav>
+  <nav className="space-y-2">
+    <button
+      onClick={() => setActiveSection("dashboard")}
+      className={`w-full p-3 rounded-lg font-medium flex items-center justify-center transition-all duration-300 ease-in-out ${
+        activeSection === "dashboard"
+          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105"
+          : "bg-blue-200 dark:bg-gray-700 text-blue-900 dark:text-gray-200 hover:bg-blue-400 dark:hover:bg-gray-600 hover:text-white"
+      }`}
+    >
+      Dashboard
+    </button>
 
-        <div className="mt-auto pt-6">
-          <button
-            onClick={handleLogout}
-            className="flex items-center justify-center p-3 bg-red-500 w-full rounded-lg 
-            font-medium transition-all text-white duration-300 ease-in-out transform
-            hover:bg-red-600 hover:scale-105 hover:shadow-lg"
-          >
-            <FaSignOutAlt className="mr-2" /> Logout
-          </button>
-        </div>
-      </aside>
+    <button
+      onClick={() => setActiveSection("manage-users")}
+      className={`w-full p-3 rounded-lg font-medium flex items-center justify-center transition-all duration-300 ease-in-out ${
+        activeSection === "manage-users"
+          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105"
+          : "bg-blue-200 dark:bg-gray-700 text-blue-900 dark:text-gray-200 hover:bg-blue-400 dark:hover:bg-gray-600 hover:text-white"
+      }`}
+    >
+      Manage Users
+    </button>
 
+    <button
+      onClick={() => setActiveSection("profile")}
+      className={`w-full p-3 rounded-lg font-medium flex items-center justify-center transition-all duration-300 ease-in-out ${
+        activeSection === "profile"
+          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg scale-105"
+          : "bg-blue-200 dark:bg-gray-700 text-blue-900 dark:text-gray-200 hover:bg-blue-400 dark:hover:bg-gray-600 hover:text-white"
+      }`}
+    >
+      Profile
+    </button>
+  </nav>
+
+  <div className="mt-auto pt-6">
+    <button
+      onClick={handleLogout}
+      className="flex items-center justify-center p-3 bg-red-500 w-full rounded-lg 
+      font-medium transition-all text-white duration-300 ease-in-out transform
+      hover:bg-red-600 hover:scale-105 hover:shadow-lg dark:bg-red-600 dark:hover:bg-red-700"
+    >
+      <FaSignOutAlt className="mr-2" /> Logout
+    </button>
+  </div>
+</aside>
       {/* Main Content */}
       <main className="flex-1 p-6 overflow-y-auto">
+        <header className="mb-10 pb-6 border-b border-gray-200 dark:border-gray-700/50 flex justify-between items-center">
+                  <div>
+                    <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Welcome, <span className="text-blue-500">{user.fullname || "User"}</span> !</h1>
+                   
+                  </div>
+                  <button onClick={toggleDarkMode} className={`p-3 rounded-full shadow-md transition-colors duration-300 ${isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-gray-700/10 text-gray-600 hover:bg-gray-700/20"}`}>
+                    {isDarkMode ? <FaSun size={24} /> : <FaMoon size={24} />}
+                  </button>
+                </header>
         {activeSection === "dashboard" && (
           <>
             <motion.div
@@ -881,6 +895,7 @@ const AdminDashboard = () => {
 
         {activeSection === "profile" && (
           <div className="max-w-4xl mx-auto mt-6 p-6 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-slate-800 dark:to-slate-900 rounded-3xl shadow-2xl">
+            
             <h2 className="text-3xl font-bold mb-8 text-center text-gray-800 dark:text-gray-100">
               My Profile
             </h2>

@@ -3,7 +3,7 @@ const router = express.Router();
 const verifyToken = require("../middleware/verifyToken");
 const User = require("../models/user");
 const File = require("../models/File");
-const ActivityLog = require("../models/activityLog");
+const ActivityLog = require("../models/ActivityLog");
 const DeletionLog = require("../models/DeletionLog");
 
 // ===== Dashboard Summary Stats =====
@@ -137,17 +137,17 @@ router.get("/top-uploaders", verifyToken, async (req, res) => {
 });
 
 // ===== Recent Activities =====
-// router.get("/recent-activities", verifyToken, async (req, res) => {
-//   try {
-//     const activities = await ActivityLog.find({})
-//       .populate("user", "fullname email role")
-//       .sort({ timestamp: -1 })
-//       .limit(10);
-//     res.json(activities);
-//   } catch (err) {
-//     console.error("Recent activities error:", err);
-//     res.status(500).json({ error: "Failed to fetch recent activities" });
-//   }
-// });
+router.get("/recent-activities", verifyToken, async (req, res) => {
+  try {
+    const activities = await ActivityLog.find({})
+      .populate("user", "fullname email role")
+      .sort({ timestamp: -1 })
+      .limit(10);
+    res.json(activities);
+  } catch (err) {
+    console.error("Recent activities error:", err);
+    res.status(500).json({ error: "Failed to fetch recent activities" });
+  }
+});
 
 module.exports = router;
