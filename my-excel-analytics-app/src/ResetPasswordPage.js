@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { DarkModeContext } from './contexts/DarkModeContext';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaEyeSlash, FaEye, FaCheckCircle } from "react-icons/fa";
+import { FaSun, FaMoon, FaEyeSlash, FaEye, FaCheckCircle } from "react-icons/fa";
 
 // Helper component for the requirements checklist
 const RequirementItem = ({ met, text }) => (
-  <div className={`flex items-center transition-colors duration-300 text-sm ${met ? 'text-green-400' : 'text-red-400'}`}>
-    <FaCheckCircle className="mr-2 flex-shrink-0" />
-    <span>{text}</span>
-  </div>
+    <div className={`flex items-center transition-colors duration-300 text-sm ${met ? 'text-green-400' : 'text-red-400'}`}>
+        <FaCheckCircle className="mr-2 flex-shrink-0" />
+        <span>{text}</span>
+    </div>
 );
 
 const ResetPasswordPage = () => {
@@ -18,6 +19,7 @@ const ResetPasswordPage = () => {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { token } = useParams();
+    const { isDarkMode, toggleDarkMode } = useContext(DarkModeContext);
     const navigate = useNavigate();
 
     // State for password strength and requirements
@@ -86,21 +88,30 @@ const ResetPasswordPage = () => {
         }
     };
 
-    const imageUrl = "https://wallpaperbat.com/img/7899234-excel-wallpaper-for-free-download.png";
+    const videoUrl = "https://cdn.pixabay.com/video/2016/09/21/5441-184226793_medium.mp4";
 
     return (
         <div className="relative flex items-center justify-center min-h-screen px-4">
-            <div
-                className="absolute inset-0 bg-cover bg-center bg-fixed z-0"
-                style={{ backgroundImage: `url(${imageUrl})` }}
-            >
-                <div className="absolute inset-0 bg-black opacity-40"></div>
+            <div className="absolute inset-0 z-0 overflow-hidden">
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                    src={videoUrl}
+                />
+                <div className={`absolute inset-0 transition-colors duration-300 ${isDarkMode ? 'bg-black bg-opacity-50' : 'bg-white bg-opacity-10'}`}></div>
             </div>
+
+            <button onClick={toggleDarkMode} className={`absolute top-4 right-4 p-3 rounded-full shadow-lg transition-colors duration-300 z-50 ${isDarkMode ? "bg-gray-700 text-white hover:bg-gray-600" : "bg-white text-gray-800 hover:bg-gray-200"}`}>
+                {isDarkMode ? <FaSun className="h-6 w-6" /> : <FaMoon className="h-6 w-6" />}
+            </button>
 
             <div className="relative z-10 w-full max-w-md p-8 bg-white/20 dark:bg-gray-800/20 rounded-xl shadow-lg border border-white/30 dark:border-gray-700/30 backdrop-blur-lg">
                 <div className="text-center mb-6">
-                    <h2 className="text-3xl font-bold text-white mt-4 mb-2">Reset Password</h2>
-                    <p className="text-gray-200">Enter your new password below to regain access.</p>
+                    <h2 className="text-3xl font-bold text-black dark:text-white mt-4 mb-2">Reset Password</h2>
+                    <p className="text-black/100 dark:text-gray-200">Enter your new password below to regain access.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -121,7 +132,7 @@ const ResetPasswordPage = () => {
                             {showNewPassword ? <FaEyeSlash className="h-5 w-5" /> : <FaEye className="h-5 w-5" />}
                         </button>
                     </div>
-                    
+
                     {/* Password Strength Indicator */}
                     {password && (
                         <div className="space-y-2">
