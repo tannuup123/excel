@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/excel/static/css/main.fd0b7ae0.css",
-    "main.js": "/excel/static/js/main.08272b82.js",
+    "main.js": "/excel/static/js/main.afc5142c.js",
     "static/js/239.f947f661.chunk.js": "/excel/static/js/239.f947f661.chunk.js",
     "static/js/213.6c55e58f.chunk.js": "/excel/static/js/213.6c55e58f.chunk.js",
     "static/js/455.cb660aa0.chunk.js": "/excel/static/js/455.cb660aa0.chunk.js",
     "static/js/453.fcbe30af.chunk.js": "/excel/static/js/453.fcbe30af.chunk.js",
     "index.html": "/excel/index.html",
     "main.fd0b7ae0.css.map": "/excel/static/css/main.fd0b7ae0.css.map",
-    "main.08272b82.js.map": "/excel/static/js/main.08272b82.js.map",
+    "main.afc5142c.js.map": "/excel/static/js/main.afc5142c.js.map",
     "239.f947f661.chunk.js.map": "/excel/static/js/239.f947f661.chunk.js.map",
     "213.6c55e58f.chunk.js.map": "/excel/static/js/213.6c55e58f.chunk.js.map",
     "455.cb660aa0.chunk.js.map": "/excel/static/js/455.cb660aa0.chunk.js.map",
@@ -16,6 +16,6 @@
   },
   "entrypoints": [
     "static/css/main.fd0b7ae0.css",
-    "static/js/main.08272b82.js"
+    "static/js/main.afc5142c.js"
   ]
 }
