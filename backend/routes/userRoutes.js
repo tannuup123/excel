@@ -13,16 +13,12 @@ const verifyToken = require("../middleware/verifyToken");
 // --- Setup ---
 
 // Multer Setup
-const storage = multer.diskStorage({
-  destination: "./uploads/",
-  filename: function (req, file, cb) {
-    cb(null, "user-" + req.user.id + "-" + Date.now() + path.extname(file.originalname));
-  },
-});
+const storage = multer.memoryStorage(); // Bas itna hi likhna hai storage ke liye
+
 const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10000000 },
-  fileFilter: function (req, file, cb) {
+  storage: storage, // Yahan naya storage istemal hoga
+  limits: { fileSize: 10000000 }, // Ye waise hi rahega
+  fileFilter: function (req, file, cb) { // Ye bhi waise hi rahega
     const filetypes = /jpeg|jpg|png/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = filetypes.test(file.mimetype);
