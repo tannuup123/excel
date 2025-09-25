@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
-const path = require("path");
+const path =require("path");
 require("dotenv").config();
 
 const verifyToken = require("./middleware/verifyToken");
@@ -18,20 +18,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// UPDATED: Allow requests from your Vercel frontend
 app.use(cors({
-  origin: 'http://localhost:3000'
+  origin: [process.env.FRONTEND_URL, 'http://localhost:3000'],
+  credentials: true
 }));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // MongoDB Connection
 mongoose
-  .connect(process.env.MONGO_URI, {
+ .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("✅ MongoDB Atlas connected successfully"))
-  .catch((err) => {
+ .then(() => console.log("✅ MongoDB Atlas connected successfully"))
+ .catch((err) => {
     console.error("❌ MongoDB Atlas connection error:", err);
     process.exit(1);
   });
@@ -209,4 +211,8 @@ app.use("/api/files", verifyToken, fileRoutes);
 app.use("/api/admin", verifyToken, adminRoutes);
 
 // =================== START SERVER ===================
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// REMOVED: app.listen for Vercel Serverless environment
+// app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// ADDED: Export the app for Vercel
+module.exports = app;
