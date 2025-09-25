@@ -20,7 +20,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/my-excel-analytics-app/build/$1"
+      "dest": "/index.html"
     }
   ]
 }
